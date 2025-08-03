@@ -3633,4 +3633,25 @@ Players.PlayerAdded:Connect(OnPlayerChange);
 Players.PlayerRemoving:Connect(OnPlayerChange);
 
 getgenv().Library = Library
+
+function Library:CreateColoredLabel(Properties, r, g, b)
+    local _Instance = Library:Create('TextLabel', {
+        BackgroundTransparency = 1;
+        Font = Library.Font;
+        TextColor3 = Color3.fromRGB(r, g, b);
+        TextSize = 16;
+        TextStrokeTransparency = 0;
+    });
+
+    Library:ApplyTextStroke(_Instance);
+
+    Library:AddToRegistry(_Instance, {
+        TextColor3 = function() return Color3.fromRGB(r, g, b) end;
+    });
+
+    return Library:Create(_Instance, Properties);
+end
+
+-- Exemple d'utilisation :
+-- local label = Library:CreateColoredLabel({Text = "Texte coloré", Size = UDim2.new(1,0,0,20)}, 255, 0, 0) -- Rouge
 return Library
