@@ -52,7 +52,7 @@ local themes = {
 		inline = rgb(50, 50, 50),
 		gradient = rgb(40, 40, 40),
 		outline = rgb(20, 20, 20),
-		accent = rgb(0, 0, 0),
+		accent = rgb(255, 255, 255),
 		background = rgb(30, 30, 30),
 		text_color = rgb(239, 239, 239),
 		text_outline = rgb(0, 0, 0),
@@ -4697,4 +4697,5 @@ function Notifications:Create(properties)
 		Items.Outline:Destroy()
 	end)
 end
+
 return Library, themes, Flags, Notifications
