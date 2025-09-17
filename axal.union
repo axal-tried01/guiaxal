@@ -78,7 +78,7 @@ local themes = {
 		inline = rgb(50, 50, 50),
 		gradient = rgb(40, 40, 40),
 		outline = rgb(20, 20, 20),
-		accent = rgb(0, 0, 0),
+		accent = rgba(255, 255, 255, 1),
 		background = rgb(30, 30, 30),
 		text_color = rgb(239, 239, 239),
 		text_outline = rgb(0, 0, 0),
@@ -1957,19 +1957,9 @@ function Library:Window(properties)
 		local stroke = Library:Create("UIStroke", {
 			Color = themes.preset.outline,
 			LineJoinMode = Enum.LineJoinMode.Miter,
-			Thickness = 2,
 			Parent = Items.Watermark,
 		})
 		Library:Themify(stroke, "outline", "Color")
-
-		-- Glow externe pour la frame
-		Library:Create("UIStroke", {
-			Color = rgb(80, 180, 255),
-			LineJoinMode = Enum.LineJoinMode.Miter,
-			Thickness = 4,
-			Transparency = 0.8,
-			Parent = Items.Watermark,
-		})
 
 		Items.Holder = Library:Create("Frame", {
 			Parent = Items.Watermark,
@@ -2033,35 +2023,23 @@ function Library:Window(properties)
 		Library:Create("UIStroke", {
 			Parent = Items.WatermarkTitle,
 			LineJoinMode = Enum.LineJoinMode.Miter,
-			Color = rgb(50, 150, 255),
-			Thickness = 1,
-			Transparency = 0.3,
-		})
-
-		-- Effet glow externe
-		Library:Create("UIStroke", {
-			Parent = Items.WatermarkTitle,
-			LineJoinMode = Enum.LineJoinMode.Miter,
-			Color = rgb(100, 200, 255),
-			Thickness = 3,
-			Transparency = 0.7,
 		})
 
 		Library:Create("UIPadding", {
 			PaddingTop = dim(0, 6),
-			PaddingBottom = dim(0, 4),
+			PaddingBottom = dim(0, 3),
 			Parent = Items.WatermarkTitle,
-			PaddingRight = dim(0, 8),
-			PaddingLeft = dim(0, 8),
+			PaddingRight = dim(0, 6),
+			PaddingLeft = dim(0, 6),
 		})
 
 		Library:Create("ImageLabel", {
 			BorderColor3 = rgb(0, 0, 0),
 			Parent = Items.Watermark,
-			Image = "rbxassetid://133601737414791",
+			Image = "rbxassetid://102001415957074",
 			BackgroundTransparency = 1,
 			Position = dim2(0, 3, 0, 2),
-			Size = dim2(0, 11, 0, 15),
+			Size = dim2(0, 15, 0, 19),
 			BorderSizePixel = 0,
 			BackgroundColor3 = rgb(255, 255, 255),
 		})
