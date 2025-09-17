@@ -27,7 +27,7 @@ local vec2, vec3, dim2, dim, rect, dim_offset =
 
 
 local Library = {
-	Directory = "4XT V3 Dev",
+	Directory = "Axal.union",
 	Folders = {
 		"/fonts",
 		"/configs",
@@ -43,6 +43,32 @@ local Library = {
 
 Library.__index = Library
 
+-- Backwards-compatible notify helper
+function Library:Notify(titleOrTable, durationOrNil)
+	local props = {}
+	if type(titleOrTable) == "table" then
+		-- Accept { Title/Name, Description, Duration/LifeTime }
+		props.Name = titleOrTable.Title or titleOrTable.Name or titleOrTable.title or titleOrTable.name or "Notification"
+		props.LifeTime = titleOrTable.Duration or titleOrTable.LifeTime or titleOrTable.Time or durationOrNil or 3
+		-- If a Description exists, try to include it as part of the Name (Notifications.Create doesn't support Description field by default)
+		if titleOrTable.Description then
+			props.Name = tostring(props.Name) .. "\n" .. tostring(titleOrTable.Description)
+		end
+	else
+		props.Name = tostring(titleOrTable or "")
+		props.LifeTime = tonumber(durationOrNil) or 3
+	end
+
+	if self and self.Notifications and type(self.Notifications.Create) == 'function' then
+		local ok, err = pcall(function() self.Notifications:Create(props) end)
+		if not ok then
+			warn("Library:Notify -> Notifications:Create failed: ", err)
+		end
+	else
+		warn("Library:Notify -> Notifications.Create not available")
+	end
+end
+
 local Flags = Library.Flags
 local ConfigFlags = Library.ConfigFlags
 local Notifications = Library.Notifications
@@ -52,7 +78,7 @@ local themes = {
 		inline = rgb(50, 50, 50),
 		gradient = rgb(40, 40, 40),
 		outline = rgb(20, 20, 20),
-		accent = rgb(255, 255, 255),
+		accent = rgb(0, 0, 0),
 		background = rgb(30, 30, 30),
 		text_color = rgb(239, 239, 239),
 		text_outline = rgb(0, 0, 0),
@@ -1428,7 +1454,7 @@ end
 
 function Library:Window(properties)
 	local Cfg = {
-		Name = properties.Name or "4XT V3 Dev",
+		Name = properties.Name or "Axal.union",
 		Size = properties.Size or dim2(0, 455, 0, 605),
 		TabInfo,
 		Items = {},
@@ -1931,9 +1957,19 @@ function Library:Window(properties)
 		local stroke = Library:Create("UIStroke", {
 			Color = themes.preset.outline,
 			LineJoinMode = Enum.LineJoinMode.Miter,
+			Thickness = 2,
 			Parent = Items.Watermark,
 		})
 		Library:Themify(stroke, "outline", "Color")
+
+		-- Glow externe pour la frame
+		Library:Create("UIStroke", {
+			Color = rgb(80, 180, 255),
+			LineJoinMode = Enum.LineJoinMode.Miter,
+			Thickness = 4,
+			Transparency = 0.8,
+			Parent = Items.Watermark,
+		})
 
 		Items.Holder = Library:Create("Frame", {
 			Parent = Items.Watermark,
@@ -1990,21 +2026,33 @@ function Library:Window(properties)
 			Position = dim2(0, 14, 0, -2),
 			BorderSizePixel = 0,
 			AutomaticSize = Enum.AutomaticSize.XY,
-			TextSize = 12,
+			TextSize = 16,
 			BackgroundColor3 = rgb(255, 255, 255),
 		})
 
 		Library:Create("UIStroke", {
 			Parent = Items.WatermarkTitle,
 			LineJoinMode = Enum.LineJoinMode.Miter,
+			Color = rgb(50, 150, 255),
+			Thickness = 1,
+			Transparency = 0.3,
+		})
+
+		-- Effet glow externe
+		Library:Create("UIStroke", {
+			Parent = Items.WatermarkTitle,
+			LineJoinMode = Enum.LineJoinMode.Miter,
+			Color = rgb(100, 200, 255),
+			Thickness = 3,
+			Transparency = 0.7,
 		})
 
 		Library:Create("UIPadding", {
-			PaddingTop = dim(0, 5),
-			PaddingBottom = dim(0, 2),
+			PaddingTop = dim(0, 6),
+			PaddingBottom = dim(0, 4),
 			Parent = Items.WatermarkTitle,
-			PaddingRight = dim(0, 5),
-			PaddingLeft = dim(0, 5),
+			PaddingRight = dim(0, 8),
+			PaddingLeft = dim(0, 8),
 		})
 
 		Library:Create("ImageLabel", {
@@ -4697,5 +4745,4 @@ function Notifications:Create(properties)
 		Items.Outline:Destroy()
 	end)
 end
-
 return Library, themes, Flags, Notifications
