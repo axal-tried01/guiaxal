@@ -78,7 +78,7 @@ local themes = {
 		inline = rgb(50, 50, 50),
 		gradient = rgb(40, 40, 40),
 		outline = rgb(20, 20, 20),
-		accent = rgba(255, 255, 255, 1),
+		accent = rgb(0, 0, 0),
 		background = rgb(30, 30, 30),
 		text_color = rgb(239, 239, 239),
 		text_outline = rgb(0, 0, 0),
@@ -2016,7 +2016,7 @@ function Library:Window(properties)
 			Position = dim2(0, 14, 0, -2),
 			BorderSizePixel = 0,
 			AutomaticSize = Enum.AutomaticSize.XY,
-			TextSize = 16,
+			TextSize = 12,
 			BackgroundColor3 = rgb(255, 255, 255),
 		})
 
@@ -2026,11 +2026,11 @@ function Library:Window(properties)
 		})
 
 		Library:Create("UIPadding", {
-			PaddingTop = dim(0, 6),
-			PaddingBottom = dim(0, 3),
+			PaddingTop = dim(0, 5),
+			PaddingBottom = dim(0, 2),
 			Parent = Items.WatermarkTitle,
-			PaddingRight = dim(0, 6),
-			PaddingLeft = dim(0, 6),
+			PaddingRight = dim(0, 5),
+			PaddingLeft = dim(0, 5),
 		})
 
 		Library:Create("ImageLabel", {
@@ -2039,7 +2039,7 @@ function Library:Window(properties)
 			Image = "rbxassetid://102001415957074",
 			BackgroundTransparency = 1,
 			Position = dim2(0, 3, 0, 2),
-			Size = dim2(0, 15, 0, 19),
+			Size = dim2(0, 11, 0, 15),
 			BorderSizePixel = 0,
 			BackgroundColor3 = rgb(255, 255, 255),
 		})
