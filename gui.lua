@@ -1031,12 +1031,11 @@ function Library:Keypicker(properties)
 		if Cfg.Mode == "Animation" then
 			Tabs = { "ColorTab", "AnimationTab" }
 		else
-			Tabs = { "ColorTab" }
-		end
+		Tabs = { "ColorTab" }
+	end
 
-		for _, tab in Tabs do
-			local Temp = {}
-
+	for _, tab in ipairs(Tabs) do
+		local Temp = {}
 			Temp.Button = Library:Create("TextButton", {
 				Parent = Items.Buttons,
 				Name = "\0",
