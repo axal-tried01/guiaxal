@@ -574,29 +574,27 @@ function Library:Keypicker(properties)
 			Transparency = numseq({ numkey(0, 0), numkey(1, 1) }),
 		})
 
-		Items.SatValPicker = Library:Create("Frame", {
-			Name = "\0",
-			AnchorPoint = vec2(0.5, 0),
-			Parent = Items.Color,
-			BorderColor3 = rgb(0, 0, 0),
-			Size = dim2(0, 3, 0, 3),
-			BorderSizePixel = 0,
-			ZIndex = 3,
-			BackgroundColor3 = rgb(0, 0, 0),
-		})
+	Items.SatValPicker = Library:Create("Frame", {
+		Name = "\0",
+		AnchorPoint = vec2(0.5, 0),
+		Parent = Items.Color,
+		BorderColor3 = rgb(0, 0, 0),
+		Size = dim2(0, 3, 0, 3),
+		BorderSizePixel = 0,
+		ZIndex = 3,
+		BackgroundColor3 = rgb(0, 0, 0),
+	})
 
-		Items.inline = Library:Create("Frame", {
-			Parent = Items.SatValPickr,
-			Name = "\0",
-			ZIndex = 3,
-			Position = dim2(0, 1, 0, 1),
-			BorderColor3 = rgb(0, 0, 0),
-			Size = dim2(1, -2, 1, -2),
-			BorderSizePixel = 0,
-			BackgroundColor3 = rgb(255, 255, 255),
-		})
-
-		Items.Sat = Library:Create("TextButton", {
+	Items.inline = Library:Create("Frame", {
+		Parent = Items.SatValPicker,
+		Name = "\0",
+		ZIndex = 3,
+		Position = dim2(0, 1, 0, 1),
+		BorderColor3 = rgb(0, 0, 0),
+		Size = dim2(1, -2, 1, -2),
+		BorderSizePixel = 0,
+		BackgroundColor3 = rgb(255, 255, 255),
+	})		Items.Sat = Library:Create("TextButton", {
 			Parent = Items.Color,
 			Name = "\0",
 			Text = "",
