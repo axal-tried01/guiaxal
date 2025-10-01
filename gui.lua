@@ -78,7 +78,7 @@ local themes = {
 		inline = rgb(50, 50, 50),
 		gradient = rgb(40, 40, 40),
 		outline = rgb(20, 20, 20),
-		accent = rgb(0, 0, 0),
+		accent = rgb(255, 255, 255),
 		background = rgb(30, 30, 30),
 		text_color = rgb(239, 239, 239),
 		text_outline = rgb(0, 0, 0),
@@ -574,27 +574,29 @@ function Library:Keypicker(properties)
 			Transparency = numseq({ numkey(0, 0), numkey(1, 1) }),
 		})
 
-	Items.SatValPicker = Library:Create("Frame", {
-		Name = "\0",
-		AnchorPoint = vec2(0.5, 0),
-		Parent = Items.Color,
-		BorderColor3 = rgb(0, 0, 0),
-		Size = dim2(0, 3, 0, 3),
-		BorderSizePixel = 0,
-		ZIndex = 3,
-		BackgroundColor3 = rgb(0, 0, 0),
-	})
+		Items.SatValPicker = Library:Create("Frame", {
+			Name = "\0",
+			AnchorPoint = vec2(0.5, 0),
+			Parent = Items.Color,
+			BorderColor3 = rgb(0, 0, 0),
+			Size = dim2(0, 3, 0, 3),
+			BorderSizePixel = 0,
+			ZIndex = 3,
+			BackgroundColor3 = rgb(0, 0, 0),
+		})
 
-	Items.inline = Library:Create("Frame", {
-		Parent = Items.SatValPicker,
-		Name = "\0",
-		ZIndex = 3,
-		Position = dim2(0, 1, 0, 1),
-		BorderColor3 = rgb(0, 0, 0),
-		Size = dim2(1, -2, 1, -2),
-		BorderSizePixel = 0,
-		BackgroundColor3 = rgb(255, 255, 255),
-	})		Items.Sat = Library:Create("TextButton", {
+		Items.inline = Library:Create("Frame", {
+			Parent = Items.SatValPickr,
+			Name = "\0",
+			ZIndex = 3,
+			Position = dim2(0, 1, 0, 1),
+			BorderColor3 = rgb(0, 0, 0),
+			Size = dim2(1, -2, 1, -2),
+			BorderSizePixel = 0,
+			BackgroundColor3 = rgb(255, 255, 255),
+		})
+
+		Items.Sat = Library:Create("TextButton", {
 			Parent = Items.Color,
 			Name = "\0",
 			Text = "",
@@ -1031,11 +1033,12 @@ function Library:Keypicker(properties)
 		if Cfg.Mode == "Animation" then
 			Tabs = { "ColorTab", "AnimationTab" }
 		else
-		Tabs = { "ColorTab" }
-	end
+			Tabs = { "ColorTab" }
+		end
 
-	for _, tab in ipairs(Tabs) do
-		local Temp = {}
+		for _, tab in Tabs do
+			local Temp = {}
+
 			Temp.Button = Library:Create("TextButton", {
 				Parent = Items.Buttons,
 				Name = "\0",
@@ -1048,21 +1051,23 @@ function Library:Keypicker(properties)
 				BackgroundColor3 = rgb(255, 255, 255),
 			})
 
-		Temp.Background = Library:Create("TextLabel", {
-			FontFace = Library.Font,
-			TextColor3 = themes.preset.text_color,
-			BorderColor3 = rgb(0, 0, 0),
-			Text = tab:gsub("Tab", ""),
-			Parent = Temp.Button,
-			Name = "\0",
-			BackgroundTransparency = _ == 1 and 1 or 0,
-			Size = dim2(0, 0, 1, 0),
-			BorderSizePixel = 0,
-			AutomaticSize = Enum.AutomaticSize.XY,
-			TextSize = 12,
-			BackgroundColor3 = themes.preset.tab_background,
-		})
-		Library:Themify(Temp.Background, "tab_background", "BackgroundColor3")			Temp.TextPadding = Library:Create("UIPadding", {
+			Temp.Background = Library:Create("TextLabel", {
+				FontFace = Library.Font,
+				TextColor3 = themes.preset.text_color,
+				BorderColor3 = rgb(0, 0, 0),
+				Text = tab:gsub("Tab", ""),
+				Parent = Temp.Button,
+				Name = "\0",
+				BackgroundTransparency = _ == 1 and 1,
+				Size = dim2(0, 0, 1, 0),
+				BorderSizePixel = 0,
+				AutomaticSize = Enum.AutomaticSize.XY,
+				TextSize = 12,
+				BackgroundColor3 = themes.preset.tab_background,
+			})
+			Library:Themify(Temp.Background, "tab_background", "BackgroundColor3")
+
+			Temp.TextPadding = Library:Create("UIPadding", {
 				Parent = Temp.Background,
 				PaddingRight = dim(0, 6),
 				PaddingLeft = dim(0, 5),
@@ -1326,11 +1331,9 @@ function Library:GetConfig()
 	local Config = {}
 
 	for Idx, Value in Flags do
-		if type(Value) == "table" and (Value.key or Value.mode or Value.active ~= nil) and not Value.Color then
-			-- This is a keybind
-			Config[Idx] = { active = Value.active, mode = Value.mode, key = tostring(Value.key) }
+		if type(Value) == "table" and Value.key then
+			Config[Idx] = { active = Value.Active, mode = Value.Mode, key = tostring(Value.Key) }
 		elseif type(Value) == "table" and Value["Transparency"] and Value["Color"] then
-			-- This is a colorpicker
 			Config[Idx] = { Transparency = Value["Transparency"], Color = Value["Color"]:ToHex() }
 		else
 			Config[Idx] = Value
@@ -1352,10 +1355,8 @@ function Library:LoadConfig(JSON)
 
 		if Function then
 			if type(Value) == "table" and Value["Transparency"] and Value["Color"] then
-				-- Colorpicker
 				Function(hex(Value["Color"]), Value["Transparency"])
-			elseif type(Value) == "table" and (Value["active"] ~= nil or Value["mode"] or Value["key"]) then
-				-- Keybind (check if any keybind property exists)
+			elseif type(Value) == "table" and Value["Active"] then
 				Function(Value)
 			else
 				Function(Value)
@@ -3568,15 +3569,13 @@ function Library:Dropdown(properties)
 			end
 		end
 
-	Items.InnerText.Text = if IsTable then table.concat(Selected, ", ") else Selected[1] or ""
-	Flags[Cfg.Flag] = if IsTable then Selected else Selected[1]
+		Items.InnerText.Text = if IsTable then table.concat(Selected, ", ") else Selected[1] or ""
+		Flags[Cfg.Flag] = if IsTable then Selected else Selected[1]
 
-	-- Only call callback if we have a valid value
-	local flagValue = Flags[Cfg.Flag]
-	if flagValue ~= nil and (not IsTable or #flagValue > 0) then
-		Cfg.Callback(flagValue)
+		Cfg.Callback(Flags[Cfg.Flag])
 	end
-end	function Cfg.RefreshOptions(options)
+
+	function Cfg.RefreshOptions(options)
 		for _, option in Cfg.OptionInstances do
 			option:Destroy()
 		end
@@ -3926,11 +3925,13 @@ function Library:Keybind(properties)
 		Items = {},
 	}
 
-Flags[Cfg.Flag] = {
-	mode = Cfg.Mode,
-	key = Cfg.Key,
-	active = Cfg.Active,
-}	local Items = Cfg.Items
+	Flags[Cfg.Flag] = {
+		Mode = Cfg.Mode,
+		Key = Cfg.Key,
+		Active = Cfg.Active,
+	}
+
+	local Items = Cfg.Items
 	do
 		Items.KeybindOutline = Library:Create("TextButton", {
 			Parent = self.Items.Components,
@@ -4145,40 +4146,29 @@ Flags[Cfg.Flag] = {
 			input = input.Name == "Escape" and "NONE" or input
 
 			Cfg.Key = input or "NONE"
-	elseif table.find({ "Toggle", "Hold", "Always" }, input) then
-		if input == "Always" then
-			Cfg.Active = true
+		elseif table.find({ "Toggle", "Hold", "Always" }, input) then
+			if input == "Always" then
+				Cfg.Active = true
+			end
+
+			Cfg.Mode = input
+			Cfg.SetMode(Cfg.Mode)
+		elseif type(input) == "table" then
+			input.Key = type(input.Key) == "string" and input.Key ~= "NONE" and Library:ConvertEnum(input.key)
+				or input.Key
+			input.Key = input.Key == Enum.KeyCode.Escape and "NONE" or input.Key
+
+			Cfg.Key = input.Key or "NONE"
+			Cfg.Mode = input.Mode or "Toggle"
+
+			if input.Active then
+				Cfg.Active = input.Active
+			end
+
+			Cfg.SetMode(Cfg.Mode)
 		end
 
-		Cfg.Mode = input
-		Cfg.SetMode(Cfg.Mode)
-	elseif type(input) == "table" then
-		-- Support both lowercase and uppercase keys for compatibility
-		local keyValue = input.key or input.Key
-		local modeValue = input.mode or input.Mode
-		local activeValue = input.active or input.Active
-		
-		-- Convert string key to Enum
-		if type(keyValue) == "string" and keyValue ~= "NONE" then
-			keyValue = Library:ConvertEnum(keyValue)
-		end
-		
-		-- Handle Escape key
-		if keyValue == Enum.KeyCode.Escape then
-			keyValue = "NONE"
-		end
-
-		Cfg.Key = keyValue or "NONE"
-		Cfg.Mode = modeValue or "Toggle"
-
-		if activeValue ~= nil then
-			Cfg.Active = activeValue
-		end
-
-		Cfg.SetMode(Cfg.Mode)
-	end
-
-	Cfg.Callback(Cfg.Active)
+		Cfg.Callback(Cfg.Active)
 
 		local text = (tostring(Cfg.Key) ~= "Enums" and (Keys[Cfg.Key] or tostring(Cfg.Key):gsub("Enum.", "")) or nil)
 		local __text = text and tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", "")
@@ -4266,13 +4256,15 @@ Flags[Cfg.Flag] = {
 		if selected_key == Cfg.Key then
 			if Cfg.Mode == "Hold" then
 				Cfg.Set(false)
+			end
 		end
-	end
-end)
+	end)
 
-Cfg.Set({ mode = Cfg.Mode, active = Cfg.Active, key = Cfg.Key })
-ConfigFlags[Cfg.Flag] = Cfg.Set
-Items.Dropdown.Set(Cfg.Mode)	return setmetatable(Cfg, Library)
+	Cfg.Set({ Mode = Cfg.Mode, Active = Cfg.Active, Key = Cfg.Key })
+	ConfigFlags[Cfg.Flag] = Cfg.Set
+	Items.Dropdown.Set(Cfg.Mode)
+
+	return setmetatable(Cfg, Library)
 end
 
 function Library:Button(properties)
