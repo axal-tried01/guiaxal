@@ -354,7 +354,7 @@ function Library:ConvertEnum(enum)
 	local EnumParts = {}
 
 	for part in string.gmatch(enum, "[%w_]+") do
-		insert(EnumParts, part)
+		table.insert(EnumParts, part)
 	end
 
 	local EnumTable = Enum
