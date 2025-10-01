@@ -1051,23 +1051,21 @@ function Library:Keypicker(properties)
 				BackgroundColor3 = rgb(255, 255, 255),
 			})
 
-			Temp.Background = Library:Create("TextLabel", {
-				FontFace = Library.Font,
-				TextColor3 = themes.preset.text_color,
-				BorderColor3 = rgb(0, 0, 0),
-				Text = tab:gsub("Tab", ""),
-				Parent = Temp.Button,
-				Name = "\0",
-				BackgroundTransparency = _ == 1 and 1,
-				Size = dim2(0, 0, 1, 0),
-				BorderSizePixel = 0,
-				AutomaticSize = Enum.AutomaticSize.XY,
-				TextSize = 12,
-				BackgroundColor3 = themes.preset.tab_background,
-			})
-			Library:Themify(Temp.Background, "tab_background", "BackgroundColor3")
-
-			Temp.TextPadding = Library:Create("UIPadding", {
+		Temp.Background = Library:Create("TextLabel", {
+			FontFace = Library.Font,
+			TextColor3 = themes.preset.text_color,
+			BorderColor3 = rgb(0, 0, 0),
+			Text = tab:gsub("Tab", ""),
+			Parent = Temp.Button,
+			Name = "\0",
+			BackgroundTransparency = _ == 1 and 1 or 0,
+			Size = dim2(0, 0, 1, 0),
+			BorderSizePixel = 0,
+			AutomaticSize = Enum.AutomaticSize.XY,
+			TextSize = 12,
+			BackgroundColor3 = themes.preset.tab_background,
+		})
+		Library:Themify(Temp.Background, "tab_background", "BackgroundColor3")			Temp.TextPadding = Library:Create("UIPadding", {
 				Parent = Temp.Background,
 				PaddingRight = dim(0, 6),
 				PaddingLeft = dim(0, 5),
