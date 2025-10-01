@@ -1326,9 +1326,11 @@ function Library:GetConfig()
 	local Config = {}
 
 	for Idx, Value in Flags do
-		if type(Value) == "table" and Value.key then
+		if type(Value) == "table" and (Value.key or Value.mode or Value.active ~= nil) and not Value.Color then
+			-- This is a keybind
 			Config[Idx] = { active = Value.active, mode = Value.mode, key = tostring(Value.key) }
 		elseif type(Value) == "table" and Value["Transparency"] and Value["Color"] then
+			-- This is a colorpicker
 			Config[Idx] = { Transparency = Value["Transparency"], Color = Value["Color"]:ToHex() }
 		else
 			Config[Idx] = Value
@@ -1350,8 +1352,10 @@ function Library:LoadConfig(JSON)
 
 		if Function then
 			if type(Value) == "table" and Value["Transparency"] and Value["Color"] then
+				-- Colorpicker
 				Function(hex(Value["Color"]), Value["Transparency"])
-			elseif type(Value) == "table" and Value["active"] then
+			elseif type(Value) == "table" and (Value["active"] ~= nil or Value["mode"] or Value["key"]) then
+				-- Keybind (check if any keybind property exists)
 				Function(Value)
 			else
 				Function(Value)
@@ -4147,19 +4151,32 @@ Flags[Cfg.Flag] = {
 		Cfg.Mode = input
 		Cfg.SetMode(Cfg.Mode)
 	elseif type(input) == "table" then
-		input.key = type(input.key) == "string" and input.key ~= "NONE" and Library:ConvertEnum(input.key)
-			or input.key
-		input.key = input.key == Enum.KeyCode.Escape and "NONE" or input.key
+		-- Support both lowercase and uppercase keys for compatibility
+		local keyValue = input.key or input.Key
+		local modeValue = input.mode or input.Mode
+		local activeValue = input.active or input.Active
+		
+		-- Convert string key to Enum
+		if type(keyValue) == "string" and keyValue ~= "NONE" then
+			keyValue = Library:ConvertEnum(keyValue)
+		end
+		
+		-- Handle Escape key
+		if keyValue == Enum.KeyCode.Escape then
+			keyValue = "NONE"
+		end
 
-		Cfg.Key = input.key or input.Key or "NONE"
-		Cfg.Mode = input.mode or input.Mode or "Toggle"
+		Cfg.Key = keyValue or "NONE"
+		Cfg.Mode = modeValue or "Toggle"
 
-		if input.active or input.Active then
-			Cfg.Active = input.active or input.Active
+		if activeValue ~= nil then
+			Cfg.Active = activeValue
 		end
 
 		Cfg.SetMode(Cfg.Mode)
-	end		Cfg.Callback(Cfg.Active)
+	end
+
+	Cfg.Callback(Cfg.Active)
 
 		local text = (tostring(Cfg.Key) ~= "Enums" and (Keys[Cfg.Key] or tostring(Cfg.Key):gsub("Enum.", "")) or nil)
 		local __text = text and tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", "")
