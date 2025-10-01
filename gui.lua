@@ -1327,7 +1327,7 @@ function Library:GetConfig()
 
 	for Idx, Value in Flags do
 		if type(Value) == "table" and Value.key then
-			Config[Idx] = { active = Value.Active, mode = Value.Mode, key = tostring(Value.Key) }
+			Config[Idx] = { active = Value.active, mode = Value.mode, key = tostring(Value.key) }
 		elseif type(Value) == "table" and Value["Transparency"] and Value["Color"] then
 			Config[Idx] = { Transparency = Value["Transparency"], Color = Value["Color"]:ToHex() }
 		else
@@ -1351,7 +1351,7 @@ function Library:LoadConfig(JSON)
 		if Function then
 			if type(Value) == "table" and Value["Transparency"] and Value["Color"] then
 				Function(hex(Value["Color"]), Value["Transparency"])
-			elseif type(Value) == "table" and Value["Active"] then
+			elseif type(Value) == "table" and Value["active"] then
 				Function(Value)
 			else
 				Function(Value)
@@ -3920,13 +3920,11 @@ function Library:Keybind(properties)
 		Items = {},
 	}
 
-	Flags[Cfg.Flag] = {
-		Mode = Cfg.Mode,
-		Key = Cfg.Key,
-		Active = Cfg.Active,
-	}
-
-	local Items = Cfg.Items
+Flags[Cfg.Flag] = {
+	mode = Cfg.Mode,
+	key = Cfg.Key,
+	active = Cfg.Active,
+}	local Items = Cfg.Items
 	do
 		Items.KeybindOutline = Library:Create("TextButton", {
 			Parent = self.Items.Components,
@@ -4141,29 +4139,27 @@ function Library:Keybind(properties)
 			input = input.Name == "Escape" and "NONE" or input
 
 			Cfg.Key = input or "NONE"
-		elseif table.find({ "Toggle", "Hold", "Always" }, input) then
-			if input == "Always" then
-				Cfg.Active = true
-			end
-
-			Cfg.Mode = input
-			Cfg.SetMode(Cfg.Mode)
-		elseif type(input) == "table" then
-			input.Key = type(input.Key) == "string" and input.Key ~= "NONE" and Library:ConvertEnum(input.key)
-				or input.Key
-			input.Key = input.Key == Enum.KeyCode.Escape and "NONE" or input.Key
-
-			Cfg.Key = input.Key or "NONE"
-			Cfg.Mode = input.Mode or "Toggle"
-
-			if input.Active then
-				Cfg.Active = input.Active
-			end
-
-			Cfg.SetMode(Cfg.Mode)
+	elseif table.find({ "Toggle", "Hold", "Always" }, input) then
+		if input == "Always" then
+			Cfg.Active = true
 		end
 
-		Cfg.Callback(Cfg.Active)
+		Cfg.Mode = input
+		Cfg.SetMode(Cfg.Mode)
+	elseif type(input) == "table" then
+		input.key = type(input.key) == "string" and input.key ~= "NONE" and Library:ConvertEnum(input.key)
+			or input.key
+		input.key = input.key == Enum.KeyCode.Escape and "NONE" or input.key
+
+		Cfg.Key = input.key or input.Key or "NONE"
+		Cfg.Mode = input.mode or input.Mode or "Toggle"
+
+		if input.active or input.Active then
+			Cfg.Active = input.active or input.Active
+		end
+
+		Cfg.SetMode(Cfg.Mode)
+	end		Cfg.Callback(Cfg.Active)
 
 		local text = (tostring(Cfg.Key) ~= "Enums" and (Keys[Cfg.Key] or tostring(Cfg.Key):gsub("Enum.", "")) or nil)
 		local __text = text and tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", "")
@@ -4251,15 +4247,13 @@ function Library:Keybind(properties)
 		if selected_key == Cfg.Key then
 			if Cfg.Mode == "Hold" then
 				Cfg.Set(false)
-			end
 		end
-	end)
+	end
+end)
 
-	Cfg.Set({ Mode = Cfg.Mode, Active = Cfg.Active, Key = Cfg.Key })
-	ConfigFlags[Cfg.Flag] = Cfg.Set
-	Items.Dropdown.Set(Cfg.Mode)
-
-	return setmetatable(Cfg, Library)
+Cfg.Set({ mode = Cfg.Mode, active = Cfg.Active, key = Cfg.Key })
+ConfigFlags[Cfg.Flag] = Cfg.Set
+Items.Dropdown.Set(Cfg.Mode)	return setmetatable(Cfg, Library)
 end
 
 function Library:Button(properties)
