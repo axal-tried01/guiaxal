@@ -3568,13 +3568,15 @@ function Library:Dropdown(properties)
 			end
 		end
 
-		Items.InnerText.Text = if IsTable then table.concat(Selected, ", ") else Selected[1] or ""
-		Flags[Cfg.Flag] = if IsTable then Selected else Selected[1]
+	Items.InnerText.Text = if IsTable then table.concat(Selected, ", ") else Selected[1] or ""
+	Flags[Cfg.Flag] = if IsTable then Selected else Selected[1]
 
-		Cfg.Callback(Flags[Cfg.Flag])
+	-- Only call callback if we have a valid value
+	local flagValue = Flags[Cfg.Flag]
+	if flagValue ~= nil and (not IsTable or #flagValue > 0) then
+		Cfg.Callback(flagValue)
 	end
-
-	function Cfg.RefreshOptions(options)
+end	function Cfg.RefreshOptions(options)
 		for _, option in Cfg.OptionInstances do
 			option:Destroy()
 		end
