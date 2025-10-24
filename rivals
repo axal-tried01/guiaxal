@@ -1329,8 +1329,6 @@ do
 			b = 255
 		}
 		
-		local mouse = game:GetService("Players").LocalPlayer:GetMouse()
-		
 		self.colorpickers[colorpicker] = {
 			tab = tab,
 			callback = function(prop, value)
@@ -2063,8 +2061,6 @@ do
 	
 	function section:updateSlider(slider, title, value, min, max, lvalue)
 		slider = self:getModule(slider)
-		
-		local mouse = game:GetService("Players").LocalPlayer:GetMouse()
 		
 		if title then
 			slider.Title.Text = title
