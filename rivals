@@ -494,6 +494,10 @@ do
 		self.toggling = false
 	end
 	
+	function library:unload()
+		self.container:Destroy()
+	end
+	
 	-- new modules
 	
 	function library:Notify(title, text, callback)
