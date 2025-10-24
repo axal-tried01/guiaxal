@@ -1962,8 +1962,8 @@ do
 		toggle = self:getModule(toggle)
 		
 		local position = {
-			In = UDim2.new(0, 2, 0.5, -6),
-			Out = UDim2.new(0, 20, 0.5, -6)
+			In = UDim2.new(0, 2, 0.5, 0),
+			Out = UDim2.new(0, 20, 0.5, 0)
 		}
 		
 		local frame = toggle.Button.Frame
