@@ -3,7 +3,7 @@ local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
-local mouse = game.Players.LocalPlayer:GetMouse()
+local mouse = game:GetService("MouseService")
 
 -- additional
 local utility = {}
