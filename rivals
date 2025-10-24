@@ -3,7 +3,6 @@ local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
-local mouse = game:GetService("MouseService")
 
 -- additional
 local utility = {}
@@ -1405,7 +1404,8 @@ do
 			
 			while draggingCanvas do
 				
-				local x, y = mouse.X, mouse.Y
+				local mousePos = input:GetMouseLocation()
+				local x, y = mousePos.X, mousePos.Y
 				
 				sat = math.clamp((x - canvasPosition.X) / canvasSize.X, 0, 1)
 				brightness = 1 - math.clamp((y - canvasPosition.Y) / canvasSize.Y, 0, 1)
@@ -1429,7 +1429,8 @@ do
 			
 			while draggingColor do
 			
-				hue = 1 - math.clamp(1 - ((mouse.X - colorPosition.X) / colorSize.X), 0, 1)
+				local mousePos = input:GetMouseLocation()
+				hue = 1 - math.clamp(1 - ((mousePos.X - colorPosition.X) / colorSize.X), 0, 1)
 				color3 = Color3.fromHSV(hue, sat, brightness)
 				
 				for i, prop in pairs({"r", "g", "b"}) do
@@ -2074,7 +2075,7 @@ do
 		end
 		
 		local bar = slider.Slider.Bar
-		local percent = (mouse.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X
+		local percent = (input:GetMouseLocation().X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X
 		
 		if value then -- support negative ranges
 			percent = (value - min) / (max - min)
