@@ -1962,8 +1962,8 @@ do
 		toggle = self:getModule(toggle)
 		
 		local position = {
-			In = UDim2.new(0, 0, 0, 2),
-			Out = UDim2.new(0, 20, 0, 2)
+			In = UDim2.new(0, 0, 0, 0),
+			Out = UDim2.new(0, 20, 0, 0)
 		}
 		
 		local frame = toggle.Button.Frame
@@ -1976,13 +1976,13 @@ do
 		toggle.Button.ImageColor3 = value == "Out" and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
 		
 		utility:Tween(frame, {
-			Size = UDim2.new(0, 20, 1, -9),
-			Position = position[value] + UDim2.new(0, 0, 0, 2.5)
+			Size = UDim2.new(0, 20, 1, -4),
+			Position = position[value] + UDim2.new(0, 0, 0, 2)
 		}, 0.2)
 		
 		wait(0.1)
 		utility:Tween(frame, {
-			Size = UDim2.new(0, 20, 1, -4),
+			Size = UDim2.new(0, 20, 1, 0),
 			Position = position[value]
 		}, 0.1)
 	end
