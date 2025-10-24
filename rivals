@@ -1973,6 +1973,8 @@ do
 			toggle.Title.Text = title
 		end
 		
+		toggle.Button.ImageColor3 = value == "Out" and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+		
 		utility:Tween(frame, {
 			Size = UDim2.new(1, -22, 1, -9),
 			Position = position[value] + UDim2.new(0, 0, 0, 2.5)
