@@ -3,27 +3,9 @@ local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
-local HttpService = game:GetService("HttpService")
 
 -- additional
 local utility = {}
-
--- config system
-local Flags = {}
-local ConfigFlags = {}
-
--- directory
-local Directory = "RivalsGUI"
-local ConfigPath = Directory .. "/configs"
-
--- create folders if they don't exist
-if not isfolder(Directory) then
-	makefolder(Directory)
-end
-
-if not isfolder(ConfigPath) then
-	makefolder(ConfigPath)
-end
 
 -- themes
 local objects = {}
@@ -208,103 +190,6 @@ do
 	
 	function utility:DraggingEnded(callback)
 		table.insert(self.ended, callback)
-	end
-	
-	-- Config system functions
-	function utility:GetConfig()
-		local Config = {}
-		
-		for Idx, Value in pairs(Flags) do
-			if typeof(Value) == "Color3" then
-				Config[Idx] = {tostring(Value:ToHex())}
-			elseif typeof(Value) == "EnumItem" then
-				Config[Idx] = {tostring(Value)}
-			else
-				Config[Idx] = Value
-			end
-		end
-		
-		return HttpService:JSONEncode(Config)
-	end
-	
-	function utility:LoadConfig(JSON)
-		local success, Config = pcall(function()
-			return HttpService:JSONDecode(JSON)
-		end)
-		
-		if not success then
-			warn("Failed to decode config:", Config)
-			return
-		end
-		
-		for Idx, Value in pairs(Config) do
-			local Func = ConfigFlags[Idx]
-			
-			if Func then
-				if typeof(Value) == "table" then
-					Func(unpack(Value))
-				else
-					Func(Value)
-				end
-			end
-		end
-	end
-	
-	function utility:SaveConfig(name)
-		if not name or name == "" then
-			warn("Config name cannot be empty")
-			return
-		end
-		
-		local config = self:GetConfig()
-		writefile(ConfigPath .. "/" .. name .. ".json", config)
-		return true
-	end
-	
-	function utility:LoadConfigFile(name)
-		if not name or name == "" then
-			warn("Config name cannot be empty")
-			return
-		end
-		
-		local path = ConfigPath .. "/" .. name .. ".json"
-		
-		if not isfile(path) then
-			warn("Config file does not exist:", name)
-			return
-		end
-		
-		local config = readfile(path)
-		self:LoadConfig(config)
-		return true
-	end
-	
-	function utility:DeleteConfig(name)
-		if not name or name == "" then
-			warn("Config name cannot be empty")
-			return
-		end
-		
-		local path = ConfigPath .. "/" .. name .. ".json"
-		
-		if not isfile(path) then
-			warn("Config file does not exist:", name)
-			return
-		end
-		
-		delfile(path)
-		return true
-	end
-	
-	function utility:GetConfigList()
-		local configs = {}
-		
-		for _, file in pairs(listfiles(ConfigPath)) do
-			local name = file:gsub(ConfigPath .. "\\", ""):gsub(".json", "")
-			table.insert(configs, name)
-		end
-		
-		return configs
 	end
 	
 end
@@ -835,9 +720,7 @@ do
 		return button
 	end
 	
-	function section:addToggle(title, default, callback, flag)
-		flag = flag or title
-		
+	function section:addToggle(title, default, callback)
 		local toggle = utility:Create("ImageButton", {
 			Name = "Toggle",
 			Parent = self.container,
@@ -894,11 +777,10 @@ do
 		--self:Resize()
 		
 		local active = default
-		Flags[flag] = active
+		self:updateToggle(toggle, nil, active)
 		
-		local function setToggle(value)
-			active = value
-			Flags[flag] = value
+		toggle.MouseButton1Click:Connect(function()
+			active = not active
 			self:updateToggle(toggle, nil, active)
 			
 			if callback then
@@ -906,21 +788,12 @@ do
 					self:updateToggle(toggle, ...)
 				end)
 			end
-		end
-		
-		ConfigFlags[flag] = setToggle
-		self:updateToggle(toggle, nil, active)
-		
-		toggle.MouseButton1Click:Connect(function()
-			setToggle(not active)
 		end)
 		
 		return toggle
 	end
 	
-	function section:addTextbox(title, default, callback, flag)
-		flag = flag or title
-		
+	function section:addTextbox(title, default, callback)
 		local textbox = utility:Create("ImageButton", {
 			Name = "Textbox",
 			Parent = self.container,
@@ -979,21 +852,6 @@ do
 		local button = textbox.Button
 		local input = button.Textbox
 		
-		Flags[flag] = default or ""
-		
-		local function setText(text)
-			input.Text = text
-			Flags[flag] = text
-			
-			if callback then
-				callback(text, nil, function(...)
-					self:updateTextbox(textbox, ...)
-				end)
-			end
-		end
-		
-		ConfigFlags[flag] = setText
-		
 		textbox.MouseButton1Click:Connect(function()
 		
 			if textbox.Button.Size ~= UDim2.new(0, 100, 0, 16) then
@@ -1016,8 +874,6 @@ do
 			if button.ImageTransparency == 0 and (button.Size == UDim2.new(0, 200, 0, 16) or button.Size == UDim2.new(0, 100, 0, 16)) then -- i know, i dont like this either
 				utility:Pop(button, 10)
 			end
-			
-			Flags[flag] = input.Text
 			
 			if callback then
 				callback(input.Text, nil, function(...)
@@ -1676,9 +1532,7 @@ do
 		return colorpicker
 	end
 	
-	function section:addSlider(title, default, min, max, callback, flag)
-		flag = flag or title
-		
+	function section:addSlider(title, default, min, max, callback)
 		local slider = utility:Create("ImageButton", {
 			Name = "Slider",
 			Parent = self.container,
@@ -1778,26 +1632,14 @@ do
 		local value = default or min
 		local dragging, last
 		
-		Flags[flag] = value
-		
-		local sliderCallback = function(val)
-			value = val
-			Flags[flag] = val
-			
+		local callback = function(value)
 			if callback then
-				callback(val, function(...)
+				callback(value, function(...)
 					self:updateSlider(slider, ...)
 				end)
 			end
 		end
 		
-		local function setSlider(val)
-			value = self:updateSlider(slider, nil, val, min, max)
-			Flags[flag] = value
-			sliderCallback(value)
-		end
-		
-		ConfigFlags[flag] = setSlider
 		self:updateSlider(slider, nil, value, min, max)
 		
 		utility:DraggingEnded(function()
@@ -1811,7 +1653,7 @@ do
 				utility:Tween(circle, {ImageTransparency = 0}, 0.1)
 				
 				value = self:updateSlider(slider, nil, nil, min, max, value)
-				sliderCallback(value)
+				callback(value)
 				
 				utility:Wait()
 			end
@@ -1822,7 +1664,8 @@ do
 		
 		textbox.FocusLost:Connect(function()
 			if not tonumber(textbox.Text) then
-				setSlider(default or min)
+				value = self:updateSlider(slider, nil, default or min, min, max)
+				callback(value)
 			end
 		end)
 		
@@ -1833,16 +1676,14 @@ do
 				textbox.Text = text:sub(1, #text - 1)
 			elseif not allowed[text] then	
 				value = self:updateSlider(slider, nil, tonumber(text) or value, min, max)
-				sliderCallback(value)
+				callback(value)
 			end
 		end)
 		
 		return slider
 	end
 	
-	function section:addDropdown(title, list, callback, flag)
-		flag = flag or title
-		
+	function section:addDropdown(title, list, callback)
 		local dropdown = utility:Create("Frame", {
 			Name = "Dropdown",
 			Parent = self.container,
@@ -1931,35 +1772,18 @@ do
 		local focused
 		
 		list = list or {}
-		Flags[flag] = nil
-		
-		local dropdownCallback = function(value)
-			Flags[flag] = value
-			
-			if callback then
-				callback(value, function(...)
-					self:updateDropdown(dropdown, ...)
-				end)	
-			end
-		end
-		
-		local function setDropdown(value)
-			self:updateDropdown(dropdown, value, nil, dropdownCallback)
-		end
-		
-		ConfigFlags[flag] = setDropdown
 		
 		search.Button.MouseButton1Click:Connect(function()
 			if search.Button.Rotation == 0 then
-				self:updateDropdown(dropdown, nil, list, dropdownCallback)
+				self:updateDropdown(dropdown, nil, list, callback)
 			else
-				self:updateDropdown(dropdown, nil, nil, dropdownCallback)
+				self:updateDropdown(dropdown, nil, nil, callback)
 			end
 		end)
 		
 		search.TextBox.Focused:Connect(function()
 			if search.Button.Rotation == 0 then
-				self:updateDropdown(dropdown, nil, list, dropdownCallback)
+				self:updateDropdown(dropdown, nil, list, callback)
 			end
 			
 			focused = true
@@ -1974,7 +1798,7 @@ do
 				local list = utility:Sort(search.TextBox.Text, list)
 				list = #list ~= 0 and list 
 				
-				self:updateDropdown(dropdown, nil, list, dropdownCallback)
+				self:updateDropdown(dropdown, nil, list, callback)
 			end
 		end)
 		
@@ -2348,156 +2172,225 @@ do
 	end
 end
 
--- Export functions and tables
-library.SaveConfig = function(name) return utility:SaveConfig(name) end
-library.LoadConfig = function(name) return utility:LoadConfigFile(name) end
-library.DeleteConfig = function(name) return utility:DeleteConfig(name) end
-library.GetConfigList = function() return utility:GetConfigList() end
-library.GetConfig = function() return utility:GetConfig() end
-library.LoadConfigString = function(json) return utility:LoadConfig(json) end
-library.Flags = Flags
-library.ConfigFlags = ConfigFlags
+-- Watermark System
+local Watermark = {}
+Watermark.__index = Watermark
 
--- Helper function to create a config management UI in a page
-function library:addConfigSection(page, sectionTitle)
-	sectionTitle = sectionTitle or "Configuration"
+function library:createWatermark()
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
+	local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
 	
-	local section = page:newSection(sectionTitle)
-	local configNameVar = ""
-	local selectedConfigVar = nil
-	local configDropdown = nil
+	local self = setmetatable({}, Watermark)
+	self.themes = themes
+	self.enabled = true
+	self.position = UDim2.new(0, 10, 0, 10)
+	self.customText = ""
 	
-	-- Textbox pour le nom de config
-	section:addTextbox("Config Name", "", function(value)
-		configNameVar = value
-	end, "___ConfigName")
-	
-	-- Bouton Save
-	section:addButton("Save Config", function()
-		if configNameVar and configNameVar ~= "" then
-			local success = library.SaveConfig(configNameVar)
-			if success then
-				library.Notify("Config saved: " .. configNameVar, 3)
-				-- Rafraîchir le dropdown
-				if configDropdown then
-					local configs = library.GetConfigList()
-					-- Note: Il faudrait une fonction updateDropdown accessible ici
-				end
-			else
-				library.Notify("Failed to save config", 2)
-			end
-		else
-			library.Notify("Enter a config name first", 2)
-		end
-	end)
-	
-	-- Dropdown pour sélectionner une config
-	local configs = library.GetConfigList()
-	configDropdown = section:addDropdown("Select Config", configs, function(value)
-		selectedConfigVar = value
-	end, "___SelectedConfig")
-	
-	-- Bouton Load
-	section:addButton("Load Config", function()
-		if selectedConfigVar then
-			local success = library.LoadConfig(selectedConfigVar)
-			if success then
-				library.Notify("Config loaded: " .. selectedConfigVar, 3)
-			else
-				library.Notify("Failed to load config", 2)
-			end
-		else
-			library.Notify("Select a config first", 2)
-		end
-	end)
-	
-	-- Bouton Delete
-	section:addButton("Delete Config", function()
-		if selectedConfigVar then
-			local success = library.DeleteConfig(selectedConfigVar)
-			if success then
-				library.Notify("Config deleted: " .. selectedConfigVar, 3)
-				selectedConfigVar = nil
-			else
-				library.Notify("Failed to delete config", 2)
-			end
-		else
-			library.Notify("Select a config to delete", 2)
-		end
-	end)
-	
-	-- Bouton Refresh
-	section:addButton("Refresh List", function()
-		library.Notify("Config list refreshed", 2)
-		-- Note: Rafraîchir le dropdown nécessiterait une méthode updateDropdown
-	end)
-	
-	return section
-end
-
--- Simple notification function
-library.Notify = function(message, duration)
-	duration = duration or 3
-	
-	local notifGui = game:GetService("CoreGui"):FindFirstChild("RivalsNotifications")
-	if not notifGui then
-		notifGui = Instance.new("ScreenGui")
-		notifGui.Name = "RivalsNotifications"
-		notifGui.Parent = game:GetService("CoreGui")
-		notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	end
-	
-	local notif = utility:Create("Frame", {
-		Parent = notifGui,
-		BackgroundColor3 = themes.Background,
-		BorderSizePixel = 0,
-		Position = UDim2.new(1, 10, 0.95, 0),
-		Size = UDim2.new(0, 0, 0, 40),
-		AnchorPoint = Vector2.new(1, 1),
-		ZIndex = 10
-	}, {
-		utility:Create("TextLabel", {
-			BackgroundTransparency = 1,
-			Size = UDim2.new(1, -10, 1, 0),
-			Position = UDim2.new(0, 5, 0, 0),
-			Font = Enum.Font.Gotham,
-			Text = tostring(message),
-			TextColor3 = themes.TextColor,
-			TextSize = 12,
-			TextXAlignment = Enum.TextXAlignment.Left,
-			ZIndex = 11
-		}),
-		utility:Create("Frame", {
-			Name = "Accent",
-			BackgroundColor3 = themes.Accent,
-			BorderSizePixel = 0,
-			Size = UDim2.new(0, 2, 1, 0),
-			ZIndex = 11
-		})
+	-- Créer le container de la watermark
+	self.container = utility:Create("ScreenGui", {
+		Name = "Watermark",
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		Parent = game.CoreGui
 	})
 	
-	local textSize = game:GetService("TextService"):GetTextSize(
-		tostring(message),
-		12,
-		Enum.Font.Gotham,
-		Vector2.new(math.huge, 40)
-	)
+	-- Frame principale
+	self.frame = utility:Create("ImageLabel", {
+		Name = "WatermarkFrame",
+		BackgroundTransparency = 1,
+		Position = self.position,
+		Size = UDim2.new(0, 250, 0, 80),
+		Image = "rbxassetid://4641149554",
+		ImageColor3 = themes.Background,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(4, 4, 296, 296),
+		Parent = self.container
+	})
 	
-	utility:Tween(notif, {
-		Position = UDim2.new(1, -10, 0.95, 0),
-		Size = UDim2.new(0, math.max(textSize.X + 20, 150), 0, 40)
-	}, 0.3)
+	-- Glow effect
+	self.glow = utility:Create("ImageLabel", {
+		Name = "Glow",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, -15, 0, -15),
+		Size = UDim2.new(1, 30, 1, 30),
+		ZIndex = 0,
+		Image = "rbxassetid://5028857084",
+		ImageColor3 = themes.Glow,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(24, 24, 276, 276),
+		Parent = self.frame
+	})
 	
-	spawn(function()
-		wait(duration)
-		utility:Tween(notif, {
-			Position = UDim2.new(1, 10, 0.95, 0),
-			Size = UDim2.new(0, 0, 0, 40)
-		}, 0.3)
+	-- Top bar accent
+	self.topBar = utility:Create("ImageLabel", {
+		Name = "TopBar",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 3),
+		ZIndex = 2,
+		Image = "rbxassetid://4595286933",
+		ImageColor3 = themes.Accent,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(4, 4, 296, 296),
+		Parent = self.frame
+	})
+	
+	-- Title text
+	self.titleLabel = utility:Create("TextLabel", {
+		Name = "Title",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 8),
+		Size = UDim2.new(1, -20, 0, 18),
+		ZIndex = 3,
+		Font = Enum.Font.GothamBold,
+		Text = "Axal.fr - " .. gameName,
+		TextColor3 = themes.TextColor,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- FPS label
+	self.fpsLabel = utility:Create("TextLabel", {
+		Name = "FPS",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 30),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = "FPS: 0",
+		TextColor3 = themes.TextColor,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- Ping label
+	self.pingLabel = utility:Create("TextLabel", {
+		Name = "Ping",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 48),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = "Ping: 0ms",
+		TextColor3 = themes.TextColor,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- Time label
+	self.timeLabel = utility:Create("TextLabel", {
+		Name = "Time",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 48),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = os.date("%H:%M:%S"),
+		TextColor3 = themes.TextColor,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Parent = self.frame
+	})
+	
+	-- Custom text label
+	self.customLabel = utility:Create("TextLabel", {
+		Name = "Custom",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 63),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = "",
+		TextColor3 = themes.TextColor,
+		TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Visible = false,
+		Parent = self.frame
+	})
+	
+	-- Rendre draggable
+	utility:DraggingEnabled(self.frame)
+	
+	-- Update loop
+	local lastUpdate = tick()
+	local frames = 0
+	local fps = 0
+	
+	RunService.RenderStepped:Connect(function()
+		if not self.enabled then return end
 		
-		wait(0.3)
-		notif:Destroy()
+		frames = frames + 1
+		local currentTime = tick()
+		
+		if currentTime - lastUpdate >= 1 then
+			fps = frames
+			frames = 0
+			lastUpdate = currentTime
+		end
+		
+		-- Update FPS
+		self.fpsLabel.Text = string.format("FPS: %d", fps)
+		
+		-- Update Ping
+		local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+		self.pingLabel.Text = string.format("Ping: %dms", math.floor(ping))
+		
+		-- Update Time
+		self.timeLabel.Text = os.date("%H:%M:%S")
 	end)
+	
+	-- Methods
+	self.setTheme = function(s, property, color)
+		if property == "Background" then
+			s.frame.ImageColor3 = color
+		elseif property == "Glow" then
+			s.glow.ImageColor3 = color
+		elseif property == "Accent" then
+			s.topBar.ImageColor3 = color
+		elseif property == "TextColor" then
+			s.titleLabel.TextColor3 = color
+			s.fpsLabel.TextColor3 = color
+			s.pingLabel.TextColor3 = color
+			s.timeLabel.TextColor3 = color
+			s.customLabel.TextColor3 = color
+		end
+	end
+	
+	self.setCustomText = function(s, text)
+		s.customText = text
+		s.customLabel.Text = text
+		s.customLabel.Visible = text ~= ""
+		
+		-- Adjust frame size
+		if text ~= "" then
+			s.frame.Size = UDim2.new(0, 250, 0, 95)
+		else
+			s.frame.Size = UDim2.new(0, 250, 0, 80)
+		end
+	end
+	
+	self.setTitle = function(s, title)
+		s.titleLabel.Text = title
+	end
+	
+	self.setPosition = function(s, position)
+		s.position = position
+		s.frame.Position = position
+	end
+	
+	self.toggle = function(s)
+		s.enabled = not s.enabled
+		s.container.Enabled = s.enabled
+	end
+	
+	self.destroy = function(s)
+		s.container:Destroy()
+	end
+	
+	return self
 end
 
 return library
