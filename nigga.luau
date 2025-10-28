@@ -21,7 +21,7 @@ local success, err = pcall(function()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local LogService = game:GetService("LogService")
     local ScriptContext = game:GetService("ScriptContext")
-    -- Méthode 1: Hook du remote AnalyticsPipeline (plus sûr que de hooker toutes les fonctions)
+    -- Méthode 1: Hook du remote AnalyticsPipeline
     task.spawn(function()
         local ok, remote = pcall(function()
             return ReplicatedStorage:WaitForChild("Remotes", 5):WaitForChild("AnalyticsPipeline", 5):WaitForChild("RemoteEvent", 5)
@@ -32,6 +32,7 @@ local success, err = pcall(function()
                 if conn and conn.Function then
                     if pcall(function()
                         hookfunction(conn.Function, newcclosure(function(...)
+                            -- Bloquer tous les appels
                         end))
                     end) then 
                         hooked += 1
@@ -39,29 +40,6 @@ local success, err = pcall(function()
                 end
             end
             print("Hooked " .. hooked .. " anticheat remote connections")
-        end
-        
-        -- Hook aussi FireServer pour bloquer les envois (via hookmetamethod)
-        if ok and remote then
-            pcall(function()
-                local mt = getrawmetatable(game)
-                local oldNamecall = mt.__namecall
-                setreadonly(mt, false)
-                
-                mt.__namecall = newcclosure(function(self, ...)
-                    local method = getnamecallmethod()
-                    
-                    if self == remote and method == "FireServer" then
-                        -- Bloquer les appels au remote analytics
-                        return
-                    end
-                    
-                    return oldNamecall(self, ...)
-                end)
-                
-                setreadonly(mt, true)
-                print("Blocked analytics FireServer via metamethod")
-            end)
         end
     end)
     
