@@ -2688,7 +2688,8 @@ function library:createConfigSystem()
 		
 		local success, result = pcall(function()
 			for _, file in pairs(listfiles(s.configFolder)) do
-				local fileName = file:match("^.+/(.+)$") or file
+				-- Extraire le nom de fichier (compatible Windows et Unix)
+				local fileName = file:match("^.+[/\\](.+)$") or file
 				if fileName:match("%.json$") then
 					local configName = fileName:gsub("%.json$", "")
 					table.insert(configs, configName)
