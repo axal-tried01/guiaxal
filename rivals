@@ -2172,4 +2172,225 @@ do
 	end
 end
 
+-- Watermark System
+local Watermark = {}
+Watermark.__index = Watermark
+
+function library:createWatermark()
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
+	local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+	
+	local self = setmetatable({}, Watermark)
+	self.themes = themes
+	self.enabled = true
+	self.position = UDim2.new(0, 10, 0, 10)
+	self.customText = ""
+	
+	-- Créer le container de la watermark
+	self.container = utility:Create("ScreenGui", {
+		Name = "Watermark",
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		Parent = game.CoreGui
+	})
+	
+	-- Frame principale
+	self.frame = utility:Create("ImageLabel", {
+		Name = "WatermarkFrame",
+		BackgroundTransparency = 1,
+		Position = self.position,
+		Size = UDim2.new(0, 250, 0, 80),
+		Image = "rbxassetid://4641149554",
+		ImageColor3 = themes.Background,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(4, 4, 296, 296),
+		Parent = self.container
+	})
+	
+	-- Glow effect
+	self.glow = utility:Create("ImageLabel", {
+		Name = "Glow",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, -15, 0, -15),
+		Size = UDim2.new(1, 30, 1, 30),
+		ZIndex = 0,
+		Image = "rbxassetid://5028857084",
+		ImageColor3 = themes.Glow,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(24, 24, 276, 276),
+		Parent = self.frame
+	})
+	
+	-- Top bar accent
+	self.topBar = utility:Create("ImageLabel", {
+		Name = "TopBar",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 3),
+		ZIndex = 2,
+		Image = "rbxassetid://4595286933",
+		ImageColor3 = themes.Accent,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(4, 4, 296, 296),
+		Parent = self.frame
+	})
+	
+	-- Title text
+	self.titleLabel = utility:Create("TextLabel", {
+		Name = "Title",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 8),
+		Size = UDim2.new(1, -20, 0, 18),
+		ZIndex = 3,
+		Font = Enum.Font.GothamBold,
+		Text = "Axal.fr - " .. gameName,
+		TextColor3 = themes.TextColor,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- FPS label
+	self.fpsLabel = utility:Create("TextLabel", {
+		Name = "FPS",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 30),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = "FPS: 0",
+		TextColor3 = themes.TextColor,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- Ping label
+	self.pingLabel = utility:Create("TextLabel", {
+		Name = "Ping",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 48),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = "Ping: 0ms",
+		TextColor3 = themes.TextColor,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- Time label
+	self.timeLabel = utility:Create("TextLabel", {
+		Name = "Time",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 48),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = os.date("%H:%M:%S"),
+		TextColor3 = themes.TextColor,
+		TextSize = 12,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Parent = self.frame
+	})
+	
+	-- Custom text label
+	self.customLabel = utility:Create("TextLabel", {
+		Name = "Custom",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 63),
+		Size = UDim2.new(1, -20, 0, 15),
+		ZIndex = 3,
+		Font = Enum.Font.Gotham,
+		Text = "",
+		TextColor3 = themes.TextColor,
+		TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Visible = false,
+		Parent = self.frame
+	})
+	
+	-- Rendre draggable
+	utility:DraggingEnabled(self.frame)
+	
+	-- Update loop
+	local lastUpdate = tick()
+	local frames = 0
+	local fps = 0
+	
+	RunService.RenderStepped:Connect(function()
+		if not self.enabled then return end
+		
+		frames = frames + 1
+		local currentTime = tick()
+		
+		if currentTime - lastUpdate >= 1 then
+			fps = frames
+			frames = 0
+			lastUpdate = currentTime
+		end
+		
+		-- Update FPS
+		self.fpsLabel.Text = string.format("FPS: %d", fps)
+		
+		-- Update Ping
+		local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+		self.pingLabel.Text = string.format("Ping: %dms", math.floor(ping))
+		
+		-- Update Time
+		self.timeLabel.Text = os.date("%H:%M:%S")
+	end)
+	
+	-- Methods
+	self.setTheme = function(s, property, color)
+		if property == "Background" then
+			s.frame.ImageColor3 = color
+		elseif property == "Glow" then
+			s.glow.ImageColor3 = color
+		elseif property == "Accent" then
+			s.topBar.ImageColor3 = color
+		elseif property == "TextColor" then
+			s.titleLabel.TextColor3 = color
+			s.fpsLabel.TextColor3 = color
+			s.pingLabel.TextColor3 = color
+			s.timeLabel.TextColor3 = color
+			s.customLabel.TextColor3 = color
+		end
+	end
+	
+	self.setCustomText = function(s, text)
+		s.customText = text
+		s.customLabel.Text = text
+		s.customLabel.Visible = text ~= ""
+		
+		-- Adjust frame size
+		if text ~= "" then
+			s.frame.Size = UDim2.new(0, 250, 0, 95)
+		else
+			s.frame.Size = UDim2.new(0, 250, 0, 80)
+		end
+	end
+	
+	self.setTitle = function(s, title)
+		s.titleLabel.Text = title
+	end
+	
+	self.setPosition = function(s, position)
+		s.position = position
+		s.frame.Position = position
+	end
+	
+	self.toggle = function(s)
+		s.enabled = not s.enabled
+		s.container.Enabled = s.enabled
+	end
+	
+	self.destroy = function(s)
+		s.container:Destroy()
+	end
+	
+	return self
+end
+
 return library
