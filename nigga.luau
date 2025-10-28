@@ -41,14 +41,27 @@ local success, err = pcall(function()
             print("Hooked " .. hooked .. " anticheat remote connections")
         end
         
-        -- Hook aussi FireServer pour bloquer les envois
+        -- Hook aussi FireServer pour bloquer les envois (via hookmetamethod)
         if ok and remote then
-            local oldFireServer = remote.FireServer
-            remote.FireServer = newcclosure(function(...)
-                -- Bloquer tous les appels
-                return
+            pcall(function()
+                local mt = getrawmetatable(game)
+                local oldNamecall = mt.__namecall
+                setreadonly(mt, false)
+                
+                mt.__namecall = newcclosure(function(self, ...)
+                    local method = getnamecallmethod()
+                    
+                    if self == remote and method == "FireServer" then
+                        -- Bloquer les appels au remote analytics
+                        return
+                    end
+                    
+                    return oldNamecall(self, ...)
+                end)
+                
+                setreadonly(mt, true)
+                print("Blocked analytics FireServer via metamethod")
             end)
-            print("Blocked analytics FireServer")
         end
     end)
     
