@@ -2393,4 +2393,136 @@ function library:createWatermark()
 	return self
 end
 
+-- Config System
+function library:createConfigSystem()
+	local self = {}
+	self.configFolder = "AxalConfigs"
+	self.configData = {}
+	self.callbacks = {}
+	
+	-- Créer le dossier de config s'il n'existe pas
+	if not isfolder(self.configFolder) then
+		makefolder(self.configFolder)
+	end
+	
+	-- Enregistrer une callback pour une catégorie
+	self.registerCallback = function(s, category, callback)
+		s.callbacks[category] = callback
+	end
+	
+	-- Sauvegarder la config
+	self.save = function(s, configName)
+		if configName == "" or configName == nil then
+			return false, "Config name cannot be empty"
+		end
+		
+		local data = {}
+		
+		-- Collecter les données via les callbacks
+		for category, callback in pairs(s.callbacks) do
+			data[category] = callback("get")
+		end
+		
+		local success, result = pcall(function()
+			local json = game:GetService("HttpService"):JSONEncode(data)
+			writefile(s.configFolder .. "/" .. configName .. ".json", json)
+		end)
+		
+		if success then
+			return true, "Config saved successfully"
+		else
+			return false, "Failed to save config: " .. tostring(result)
+		end
+	end
+	
+	-- Charger la config
+	self.load = function(s, configName)
+		if configName == "" or configName == nil then
+			return false, "Config name cannot be empty"
+		end
+		
+		local filePath = s.configFolder .. "/" .. configName .. ".json"
+		
+		if not isfile(filePath) then
+			return false, "Config does not exist"
+		end
+		
+		local success, result = pcall(function()
+			local json = readfile(filePath)
+			local data = game:GetService("HttpService"):JSONDecode(json)
+			
+			-- Appliquer les données via les callbacks
+			for category, values in pairs(data) do
+				if s.callbacks[category] then
+					s.callbacks[category]("set", values)
+				end
+			end
+		end)
+		
+		if success then
+			return true, "Config loaded successfully"
+		else
+			return false, "Failed to load config: " .. tostring(result)
+		end
+	end
+	
+	-- Supprimer une config
+	self.delete = function(s, configName)
+		if configName == "" or configName == nil then
+			return false, "Config name cannot be empty"
+		end
+		
+		local filePath = s.configFolder .. "/" .. configName .. ".json"
+		
+		if not isfile(filePath) then
+			return false, "Config does not exist"
+		end
+		
+		local success, result = pcall(function()
+			delfile(filePath)
+		end)
+		
+		if success then
+			return true, "Config deleted successfully"
+		else
+			return false, "Failed to delete config: " .. tostring(result)
+		end
+	end
+	
+	-- Lister toutes les configs
+	self.list = function(s)
+		local configs = {}
+		
+		if not isfolder(s.configFolder) then
+			return configs
+		end
+		
+		local success, result = pcall(function()
+			for _, file in pairs(listfiles(s.configFolder)) do
+				local fileName = file:match("^.+/(.+)$") or file
+				if fileName:match("%.json$") then
+					local configName = fileName:gsub("%.json$", "")
+					table.insert(configs, configName)
+				end
+			end
+		end)
+		
+		return configs
+	end
+	
+	-- Auto-save périodique (optionnel)
+	self.enableAutoSave = function(s, configName, interval)
+		interval = interval or 300 -- 5 minutes par défaut
+		
+		spawn(function()
+			while true do
+				wait(interval)
+				s:save(configName)
+			end
+		end)
+	end
+	
+	return self
+end
+
 return library
