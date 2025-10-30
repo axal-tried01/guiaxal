@@ -2715,4 +2715,390 @@ function library:createConfigSystem()
 	return configSystem
 end
 
+-- ESP Preview System
+local ESPPreview = {}
+ESPPreview.__index = ESPPreview
+
+function library:createESPPreview()
+	local self = setmetatable({}, ESPPreview)
+	self.themes = themes
+	self.enabled = true
+	self.visible = true
+	
+	-- Créer le container
+	self.container = utility:Create("ScreenGui", {
+		Name = "ESPPreview",
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		Parent = game.CoreGui
+	})
+	
+	-- Frame principale
+	self.frame = utility:Create("ImageLabel", {
+		Name = "ESPPreviewFrame",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(1, -260, 0, 120),
+		Size = UDim2.new(0, 250, 0, 350),
+		Image = "rbxassetid://4641149554",
+		ImageColor3 = themes.Background,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(4, 4, 296, 296),
+		Parent = self.container
+	})
+	
+	-- Glow effect
+	local glow = utility:Create("ImageLabel", {
+		Name = "Glow",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, -15, 0, -15),
+		Size = UDim2.new(1, 30, 1, 30),
+		ZIndex = 0,
+		Image = "rbxassetid://5028857084",
+		ImageColor3 = themes.Glow,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(100, 100, 100, 100),
+		Parent = self.frame
+	})
+	
+	-- Title
+	local title = utility:Create("TextLabel", {
+		Name = "Title",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 5),
+		Size = UDim2.new(1, -40, 0, 20),
+		Font = Enum.Font.GothamBold,
+		Text = "ESP Preview",
+		TextColor3 = themes.TextColor,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = self.frame
+	})
+	
+	-- Toggle visibility button
+	local toggleButton = utility:Create("TextButton", {
+		Name = "ToggleButton",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(1, -25, 0, 5),
+		Size = UDim2.new(0, 20, 0, 20),
+		Font = Enum.Font.GothamBold,
+		Text = "○",
+		TextColor3 = themes.TextColor,
+		TextSize = 16,
+		Parent = self.frame
+	})
+	
+	-- Preview container
+	local previewContainer = utility:Create("ImageLabel", {
+		Name = "PreviewContainer",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0, 10, 0, 35),
+		Size = UDim2.new(1, -20, 1, -45),
+		Image = "rbxassetid://4641149554",
+		ImageColor3 = themes.DarkContrast,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Rect.new(4, 4, 296, 296),
+		Parent = self.frame
+	})
+	
+	-- Preview canvas (where the ESP elements will be drawn)
+	local canvas = utility:Create("Frame", {
+		Name = "Canvas",
+		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+		BorderSizePixel = 0,
+		Position = UDim2.new(0, 5, 0, 5),
+		Size = UDim2.new(1, -10, 1, -10),
+		Parent = previewContainer
+	})
+	
+	-- Create Drawing API elements for ESP preview
+	self.drawings = {}
+	
+	-- Box
+	self.drawings.boxOutline = Drawing.new("Square")
+	self.drawings.boxOutline.Thickness = 3
+	self.drawings.boxOutline.Filled = false
+	self.drawings.boxOutline.Color = Color3.fromRGB(0, 0, 0)
+	self.drawings.boxOutline.Visible = false
+	self.drawings.boxOutline.ZIndex = 1
+	
+	self.drawings.box = Drawing.new("Square")
+	self.drawings.box.Thickness = 1
+	self.drawings.box.Filled = false
+	self.drawings.box.Color = Color3.fromRGB(255, 255, 255)
+	self.drawings.box.Visible = false
+	self.drawings.box.ZIndex = 2
+	
+	-- Box Fill
+	self.drawings.boxFill = Drawing.new("Square")
+	self.drawings.boxFill.Filled = true
+	self.drawings.boxFill.Color = Color3.fromRGB(255, 255, 255)
+	self.drawings.boxFill.Transparency = 0.1
+	self.drawings.boxFill.Visible = false
+	self.drawings.boxFill.ZIndex = 0
+	
+	-- Health Bar
+	self.drawings.healthOutline = Drawing.new("Square")
+	self.drawings.healthOutline.Thickness = 1
+	self.drawings.healthOutline.Filled = true
+	self.drawings.healthOutline.Color = Color3.fromRGB(0, 0, 0)
+	self.drawings.healthOutline.Visible = false
+	self.drawings.healthOutline.ZIndex = 1
+	
+	self.drawings.health = Drawing.new("Square")
+	self.drawings.health.Filled = true
+	self.drawings.health.Color = Color3.fromRGB(0, 255, 0)
+	self.drawings.health.Visible = false
+	self.drawings.health.ZIndex = 2
+	
+	-- Text labels
+	self.drawings.nameText = Drawing.new("Text")
+	self.drawings.nameText.Text = "Username"
+	self.drawings.nameText.Size = 13
+	self.drawings.nameText.Font = 2
+	self.drawings.nameText.Color = Color3.fromRGB(255, 255, 255)
+	self.drawings.nameText.Center = true
+	self.drawings.nameText.Outline = true
+	self.drawings.nameText.OutlineColor = Color3.fromRGB(0, 0, 0)
+	self.drawings.nameText.Visible = false
+	self.drawings.nameText.ZIndex = 3
+	
+	self.drawings.distanceText = Drawing.new("Text")
+	self.drawings.distanceText.Text = "25m"
+	self.drawings.distanceText.Size = 13
+	self.drawings.distanceText.Font = 2
+	self.drawings.distanceText.Color = Color3.fromRGB(255, 255, 255)
+	self.drawings.distanceText.Center = true
+	self.drawings.distanceText.Outline = true
+	self.drawings.distanceText.OutlineColor = Color3.fromRGB(0, 0, 0)
+	self.drawings.distanceText.Visible = false
+	self.drawings.distanceText.ZIndex = 3
+	
+	-- Skeleton lines
+	self.drawings.skeleton = {}
+	for i = 1, 12 do
+		local line = Drawing.new("Line")
+		line.Thickness = 2
+		line.Color = Color3.fromRGB(255, 255, 255)
+		line.Visible = false
+		line.ZIndex = 2
+		table.insert(self.drawings.skeleton, line)
+	end
+	
+	-- Update function to calculate positions
+	function self:update()
+		if not self.visible then
+			for _, drawing in pairs(self.drawings) do
+				if type(drawing) == "table" then
+					for _, line in pairs(drawing) do
+						line.Visible = false
+					end
+				else
+					drawing.Visible = false
+				end
+			end
+			return
+		end
+		
+		local canvasPos = canvas.AbsolutePosition
+		local canvasSize = canvas.AbsoluteSize
+		
+		-- Calculate ESP box dimensions (centered in canvas)
+		local boxWidth = 80
+		local boxHeight = 120
+		local boxX = canvasPos.X + (canvasSize.X - boxWidth) / 2
+		local boxY = canvasPos.Y + (canvasSize.Y - boxHeight) / 2 + 20
+		
+		-- Update box
+		if _G.espBoxEnabled then
+			self.drawings.boxOutline.Size = Vector2.new(boxWidth, boxHeight)
+			self.drawings.boxOutline.Position = Vector2.new(boxX - 1, boxY - 1)
+			self.drawings.boxOutline.Visible = true
+			
+			self.drawings.box.Size = Vector2.new(boxWidth, boxHeight)
+			self.drawings.box.Position = Vector2.new(boxX, boxY)
+			self.drawings.box.Visible = true
+		else
+			self.drawings.boxOutline.Visible = false
+			self.drawings.box.Visible = false
+		end
+		
+		-- Update box fill
+		if _G.espBoxFillEnabled then
+			self.drawings.boxFill.Size = Vector2.new(boxWidth, boxHeight)
+			self.drawings.boxFill.Position = Vector2.new(boxX, boxY)
+			self.drawings.boxFill.Visible = true
+		else
+			self.drawings.boxFill.Visible = false
+		end
+		
+		-- Update health bar
+		if _G.espHealthEnabled then
+			local healthWidth = 4
+			local healthX = boxX - healthWidth - 2
+			
+			self.drawings.healthOutline.Size = Vector2.new(healthWidth, boxHeight)
+			self.drawings.healthOutline.Position = Vector2.new(healthX, boxY)
+			self.drawings.healthOutline.Visible = true
+			
+			-- Animate health (75% as example)
+			local healthPercent = 0.75
+			local healthHeight = boxHeight * healthPercent
+			self.drawings.health.Size = Vector2.new(healthWidth - 2, healthHeight)
+			self.drawings.health.Position = Vector2.new(healthX + 1, boxY + boxHeight - healthHeight)
+			self.drawings.health.Visible = true
+		else
+			self.drawings.healthOutline.Visible = false
+			self.drawings.health.Visible = false
+		end
+		
+		-- Update name text
+		if _G.espNameEnabled then
+			self.drawings.nameText.Position = Vector2.new(boxX + boxWidth/2, boxY - 18)
+			self.drawings.nameText.Visible = true
+		else
+			self.drawings.nameText.Visible = false
+		end
+		
+		-- Update distance text
+		if _G.espDistanceEnabled then
+			self.drawings.distanceText.Position = Vector2.new(boxX + boxWidth/2, boxY + boxHeight + 5)
+			self.drawings.distanceText.Visible = true
+		else
+			self.drawings.distanceText.Visible = false
+		end
+		
+		-- Update skeleton
+		if _G.espSkeletonEnabled then
+			-- Simple skeleton representation
+			local centerX = boxX + boxWidth/2
+			local headY = boxY + 10
+			local neckY = boxY + 25
+			local torsoY = boxY + 60
+			local hipsY = boxY + 80
+			local feetY = boxY + boxHeight - 5
+			
+			-- Head to neck
+			self.drawings.skeleton[1].From = Vector2.new(centerX, headY)
+			self.drawings.skeleton[1].To = Vector2.new(centerX, neckY)
+			self.drawings.skeleton[1].Visible = true
+			
+			-- Neck to torso
+			self.drawings.skeleton[2].From = Vector2.new(centerX, neckY)
+			self.drawings.skeleton[2].To = Vector2.new(centerX, torsoY)
+			self.drawings.skeleton[2].Visible = true
+			
+			-- Shoulders
+			self.drawings.skeleton[3].From = Vector2.new(centerX - 20, neckY + 5)
+			self.drawings.skeleton[3].To = Vector2.new(centerX + 20, neckY + 5)
+			self.drawings.skeleton[3].Visible = true
+			
+			-- Left arm
+			self.drawings.skeleton[4].From = Vector2.new(centerX - 20, neckY + 5)
+			self.drawings.skeleton[4].To = Vector2.new(centerX - 25, torsoY)
+			self.drawings.skeleton[4].Visible = true
+			
+			-- Right arm
+			self.drawings.skeleton[5].From = Vector2.new(centerX + 20, neckY + 5)
+			self.drawings.skeleton[5].To = Vector2.new(centerX + 25, torsoY)
+			self.drawings.skeleton[5].Visible = true
+			
+			-- Torso to hips
+			self.drawings.skeleton[6].From = Vector2.new(centerX, torsoY)
+			self.drawings.skeleton[6].To = Vector2.new(centerX, hipsY)
+			self.drawings.skeleton[6].Visible = true
+			
+			-- Hips
+			self.drawings.skeleton[7].From = Vector2.new(centerX - 10, hipsY)
+			self.drawings.skeleton[7].To = Vector2.new(centerX + 10, hipsY)
+			self.drawings.skeleton[7].Visible = true
+			
+			-- Left leg
+			self.drawings.skeleton[8].From = Vector2.new(centerX - 10, hipsY)
+			self.drawings.skeleton[8].To = Vector2.new(centerX - 15, feetY)
+			self.drawings.skeleton[8].Visible = true
+			
+			-- Right leg
+			self.drawings.skeleton[9].From = Vector2.new(centerX + 10, hipsY)
+			self.drawings.skeleton[9].To = Vector2.new(centerX + 15, feetY)
+			self.drawings.skeleton[9].Visible = true
+			
+			-- Hide unused skeleton lines
+			for i = 10, 12 do
+				self.drawings.skeleton[i].Visible = false
+			end
+		else
+			for _, line in pairs(self.drawings.skeleton) do
+				line.Visible = false
+			end
+		end
+	end
+	
+	-- Toggle button functionality
+	toggleButton.MouseButton1Click:Connect(function()
+		self.visible = not self.visible
+		toggleButton.Text = self.visible and "○" or "●"
+		self:update()
+	end)
+	
+	-- Auto-update loop
+	run.RenderStepped:Connect(function()
+		if self.enabled then
+			self:update()
+		end
+	end)
+	
+	function self:setPosition(position)
+		self.frame.Position = position
+	end
+	
+	function self:show()
+		self.enabled = true
+		self.container.Enabled = true
+	end
+	
+	function self:hide()
+		self.enabled = false
+		self.container.Enabled = false
+		-- Hide all drawings
+		for _, drawing in pairs(self.drawings) do
+			if type(drawing) == "table" then
+				for _, line in pairs(drawing) do
+					line.Visible = false
+				end
+			else
+				drawing.Visible = false
+			end
+		end
+	end
+	
+	function self:remove()
+		self:hide()
+		self.container:Destroy()
+		for _, drawing in pairs(self.drawings) do
+			if type(drawing) == "table" then
+				for _, line in pairs(drawing) do
+					line:Remove()
+				end
+			else
+				drawing:Remove()
+			end
+		end
+	end
+	
+	function self:setTheme(theme, color)
+		self.themes[theme] = color
+		if theme == "Background" then
+			self.frame.ImageColor3 = color
+		elseif theme == "Glow" then
+			self.frame.Glow.ImageColor3 = color
+		elseif theme == "TextColor" then
+			self.frame.Title.TextColor3 = color
+			self.frame.ToggleButton.TextColor3 = color
+		elseif theme == "DarkContrast" then
+			self.frame.PreviewContainer.ImageColor3 = color
+		end
+	end
+	
+	return self
+end
+
 return library
