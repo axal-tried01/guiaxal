@@ -2812,6 +2812,81 @@ function library:createESPPreview()
 		Parent = previewContainer
 	})
 	
+	-- Bonhomme stylisé (Character Preview) - Background frame invisible
+	local characterFrame = utility:Create("Frame", {
+		Name = "CharacterFrame",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.5, -30, 0.5, -60),
+		Size = UDim2.new(0, 60, 0, 120),
+		Parent = canvas
+	})
+	
+	-- Tête (Head)
+	local head = utility:Create("Frame", {
+		Name = "Head",
+		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.35, 0, 0, 0),
+		Size = UDim2.new(0.3, 0, 0.15, 0),
+		Parent = characterFrame
+	})
+	
+	-- Torse (Torso)
+	local torso = utility:Create("Frame", {
+		Name = "Torso",
+		BackgroundColor3 = Color3.fromRGB(100, 150, 255),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.25, 0, 0.2, 0),
+		Size = UDim2.new(0.5, 0, 0.3, 0),
+		Parent = characterFrame
+	})
+	
+	-- Bras gauche (Left Arm)
+	local leftArm = utility:Create("Frame", {
+		Name = "LeftArm",
+		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0, 0, 0.2, 0),
+		Size = UDim2.new(0.25, 0, 0.3, 0),
+		Parent = characterFrame
+	})
+	
+	-- Bras droit (Right Arm)
+	local rightArm = utility:Create("Frame", {
+		Name = "RightArm",
+		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.75, 0, 0.2, 0),
+		Size = UDim2.new(0.25, 0, 0.3, 0),
+		Parent = characterFrame
+	})
+	
+	-- Jambe gauche (Left Leg)
+	local leftLeg = utility:Create("Frame", {
+		Name = "LeftLeg",
+		BackgroundColor3 = Color3.fromRGB(50, 100, 200),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.25, 0, 0.5, 0),
+		Size = UDim2.new(0.25, 0, 0.5, 0),
+		Parent = characterFrame
+	})
+	
+	-- Jambe droite (Right Leg)
+	local rightLeg = utility:Create("Frame", {
+		Name = "RightLeg",
+		BackgroundColor3 = Color3.fromRGB(50, 100, 200),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		Size = UDim2.new(0.25, 0, 0.5, 0),
+		Parent = characterFrame
+	})
+	
 	-- Create Drawing API elements for ESP preview
 	espPreview.drawings = {}
 	
@@ -2829,6 +2904,57 @@ function library:createESPPreview()
 	espPreview.drawings.box.Color = Color3.fromRGB(255, 255, 255)
 	espPreview.drawings.box.Visible = false
 	espPreview.drawings.box.ZIndex = 2
+	
+	-- Corner Lines for Corners mode
+	espPreview.drawings.cornerLines = {}
+	
+	espPreview.drawings.cornerLines.topLeftH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topLeftH.Thickness = 2
+	espPreview.drawings.cornerLines.topLeftH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topLeftH.Visible = false
+	espPreview.drawings.cornerLines.topLeftH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.topLeftV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topLeftV.Thickness = 2
+	espPreview.drawings.cornerLines.topLeftV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topLeftV.Visible = false
+	espPreview.drawings.cornerLines.topLeftV.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.topRightH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topRightH.Thickness = 2
+	espPreview.drawings.cornerLines.topRightH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topRightH.Visible = false
+	espPreview.drawings.cornerLines.topRightH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.topRightV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topRightV.Thickness = 2
+	espPreview.drawings.cornerLines.topRightV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topRightV.Visible = false
+	espPreview.drawings.cornerLines.topRightV.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomLeftH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomLeftH.Thickness = 2
+	espPreview.drawings.cornerLines.bottomLeftH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomLeftH.Visible = false
+	espPreview.drawings.cornerLines.bottomLeftH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomLeftV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomLeftV.Thickness = 2
+	espPreview.drawings.cornerLines.bottomLeftV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomLeftV.Visible = false
+	espPreview.drawings.cornerLines.bottomLeftV.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomRightH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomRightH.Thickness = 2
+	espPreview.drawings.cornerLines.bottomRightH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomRightH.Visible = false
+	espPreview.drawings.cornerLines.bottomRightH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomRightV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomRightV.Thickness = 2
+	espPreview.drawings.cornerLines.bottomRightV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomRightV.Visible = false
+	espPreview.drawings.cornerLines.bottomRightV.ZIndex = 2
 	
 	-- Box Fill
 	espPreview.drawings.boxFill = Drawing.new("Square")
@@ -2904,24 +3030,79 @@ function library:createESPPreview()
 		local canvasPos = canvas.AbsolutePosition
 		local canvasSize = canvas.AbsoluteSize
 		
-		-- Calculate ESP box dimensions (centered in canvas)
+		-- Calculate ESP box dimensions (centered around the character)
 		local boxWidth = 80
-		local boxHeight = 120
+		local boxHeight = 130
 		local boxX = canvasPos.X + (canvasSize.X - boxWidth) / 2
-		local boxY = canvasPos.Y + (canvasSize.Y - boxHeight) / 2 + 20
+		local boxY = canvasPos.Y + (canvasSize.Y - boxHeight) / 2
 		
 		-- Update box
 		if _G.espBoxEnabled then
-			self.drawings.boxOutline.Size = Vector2.new(boxWidth, boxHeight)
-			self.drawings.boxOutline.Position = Vector2.new(boxX - 1, boxY - 1)
-			self.drawings.boxOutline.Visible = true
-			
-			self.drawings.box.Size = Vector2.new(boxWidth, boxHeight)
-			self.drawings.box.Position = Vector2.new(boxX, boxY)
-			self.drawings.box.Visible = true
+			if _G.espBoxMode == "full" then
+				-- Mode Full Box
+				self.drawings.boxOutline.Size = Vector2.new(boxWidth, boxHeight)
+				self.drawings.boxOutline.Position = Vector2.new(boxX - 1, boxY - 1)
+				self.drawings.boxOutline.Visible = true
+				
+				self.drawings.box.Size = Vector2.new(boxWidth, boxHeight)
+				self.drawings.box.Position = Vector2.new(boxX, boxY)
+				self.drawings.box.Visible = true
+				
+				-- Hide corner lines
+				for _, line in pairs(self.drawings.cornerLines) do
+					line.Visible = false
+				end
+			elseif _G.espBoxMode == "corners" then
+				-- Mode Corners
+				self.drawings.boxOutline.Visible = false
+				self.drawings.box.Visible = false
+				
+				-- Show corner lines
+				local cornerLength = math.min(boxWidth, boxHeight) / 4
+				
+				-- Top Left
+				self.drawings.cornerLines.topLeftH.From = Vector2.new(boxX, boxY)
+				self.drawings.cornerLines.topLeftH.To = Vector2.new(boxX + cornerLength, boxY)
+				self.drawings.cornerLines.topLeftH.Visible = true
+				
+				self.drawings.cornerLines.topLeftV.From = Vector2.new(boxX, boxY)
+				self.drawings.cornerLines.topLeftV.To = Vector2.new(boxX, boxY + cornerLength)
+				self.drawings.cornerLines.topLeftV.Visible = true
+				
+				-- Top Right
+				self.drawings.cornerLines.topRightH.From = Vector2.new(boxX + boxWidth - cornerLength, boxY)
+				self.drawings.cornerLines.topRightH.To = Vector2.new(boxX + boxWidth, boxY)
+				self.drawings.cornerLines.topRightH.Visible = true
+				
+				self.drawings.cornerLines.topRightV.From = Vector2.new(boxX + boxWidth, boxY)
+				self.drawings.cornerLines.topRightV.To = Vector2.new(boxX + boxWidth, boxY + cornerLength)
+				self.drawings.cornerLines.topRightV.Visible = true
+				
+				-- Bottom Left
+				self.drawings.cornerLines.bottomLeftH.From = Vector2.new(boxX, boxY + boxHeight)
+				self.drawings.cornerLines.bottomLeftH.To = Vector2.new(boxX + cornerLength, boxY + boxHeight)
+				self.drawings.cornerLines.bottomLeftH.Visible = true
+				
+				self.drawings.cornerLines.bottomLeftV.From = Vector2.new(boxX, boxY + boxHeight - cornerLength)
+				self.drawings.cornerLines.bottomLeftV.To = Vector2.new(boxX, boxY + boxHeight)
+				self.drawings.cornerLines.bottomLeftV.Visible = true
+				
+				-- Bottom Right
+				self.drawings.cornerLines.bottomRightH.From = Vector2.new(boxX + boxWidth - cornerLength, boxY + boxHeight)
+				self.drawings.cornerLines.bottomRightH.To = Vector2.new(boxX + boxWidth, boxY + boxHeight)
+				self.drawings.cornerLines.bottomRightH.Visible = true
+				
+				self.drawings.cornerLines.bottomRightV.From = Vector2.new(boxX + boxWidth, boxY + boxHeight - cornerLength)
+				self.drawings.cornerLines.bottomRightV.To = Vector2.new(boxX + boxWidth, boxY + boxHeight)
+				self.drawings.cornerLines.bottomRightV.Visible = true
+			end
 		else
 			self.drawings.boxOutline.Visible = false
 			self.drawings.box.Visible = false
+			-- Hide corner lines
+			for _, line in pairs(self.drawings.cornerLines) do
+				line.Visible = false
+			end
 		end
 		
 		-- Update box fill
