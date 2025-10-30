@@ -2812,6 +2812,81 @@ function library:createESPPreview()
 		Parent = previewContainer
 	})
 	
+	-- Bonhomme stylisé (Character Preview) - Background frame invisible
+	local characterFrame = utility:Create("Frame", {
+		Name = "CharacterFrame",
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.5, -40, 0.5, -90),
+		Size = UDim2.new(0, 80, 0, 180),
+		Parent = canvas
+	})
+	
+	-- Tête (Head)
+	local head = utility:Create("Frame", {
+		Name = "Head",
+		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.35, 0, 0, 0),
+		Size = UDim2.new(0.3, 0, 0.12, 0),
+		Parent = characterFrame
+	})
+	
+	-- Torse (Torso)
+	local torso = utility:Create("Frame", {
+		Name = "Torso",
+		BackgroundColor3 = Color3.fromRGB(100, 150, 255),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.25, 0, 0.15, 0),
+		Size = UDim2.new(0.5, 0, 0.28, 0),
+		Parent = characterFrame
+	})
+	
+	-- Bras gauche (Left Arm)
+	local leftArm = utility:Create("Frame", {
+		Name = "LeftArm",
+		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0, 0, 0.15, 0),
+		Size = UDim2.new(0.25, 0, 0.28, 0),
+		Parent = characterFrame
+	})
+	
+	-- Bras droit (Right Arm)
+	local rightArm = utility:Create("Frame", {
+		Name = "RightArm",
+		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.75, 0, 0.15, 0),
+		Size = UDim2.new(0.25, 0, 0.28, 0),
+		Parent = characterFrame
+	})
+	
+	-- Jambe gauche (Left Leg)
+	local leftLeg = utility:Create("Frame", {
+		Name = "LeftLeg",
+		BackgroundColor3 = Color3.fromRGB(50, 100, 200),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.25, 0, 0.43, 0),
+		Size = UDim2.new(0.25, 0, 0.57, 0),
+		Parent = characterFrame
+	})
+	
+	-- Jambe droite (Right Leg)
+	local rightLeg = utility:Create("Frame", {
+		Name = "RightLeg",
+		BackgroundColor3 = Color3.fromRGB(50, 100, 200),
+		BorderSizePixel = 1,
+		BorderColor3 = Color3.fromRGB(0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.43, 0),
+		Size = UDim2.new(0.25, 0, 0.57, 0),
+		Parent = characterFrame
+	})
+	
 	-- Create Drawing API elements for ESP preview
 	espPreview.drawings = {}
 	
@@ -2955,11 +3030,11 @@ function library:createESPPreview()
 		local canvasPos = canvas.AbsolutePosition
 		local canvasSize = canvas.AbsoluteSize
 		
-		-- Calculate ESP box dimensions (centered in canvas)
-		local boxWidth = 80
-		local boxHeight = 120
+		-- Calculate ESP box dimensions (centered around the character)
+		local boxWidth = 90
+		local boxHeight = 190
 		local boxX = canvasPos.X + (canvasSize.X - boxWidth) / 2
-		local boxY = canvasPos.Y + (canvasSize.Y - boxHeight) / 2 + 20
+		local boxY = canvasPos.Y + (canvasSize.Y - boxHeight) / 2
 		
 		-- Update box
 		if _G.espBoxEnabled then
