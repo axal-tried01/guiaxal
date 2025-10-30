@@ -2395,33 +2395,217 @@ end
 
 -- Config System
 function library:createConfigSystem()
-	local self = {}
-	self.configFolder = "AxalConfigs"
-	self.configData = {}
-	self.callbacks = {}
+	local configSystem = {}
+	configSystem.configFolder = "AxalConfigs"
+	configSystem.configData = {}
+	configSystem.callbacks = {}
+	configSystem.library = self  -- Référence à la library principale
 	
 	-- Créer le dossier de config s'il n'existe pas
-	if not isfolder(self.configFolder) then
-		makefolder(self.configFolder)
+	if not isfolder(configSystem.configFolder) then
+		makefolder(configSystem.configFolder)
 	end
 	
 	-- Enregistrer une callback pour une catégorie
-	self.registerCallback = function(s, category, callback)
+	configSystem.registerCallback = function(s, category, callback)
 		s.callbacks[category] = callback
 	end
 	
+	-- Fonction pour collecter automatiquement toutes les valeurs des contrôles
+	configSystem.autoCollectValues = function(s)
+		local data = {}
+		
+		-- Parcourir toutes les pages
+		if not s.library or not s.library.pages then
+			return data
+		end
+		
+		for _, page in ipairs(s.library.pages) do
+			local pageName = page.button.Name
+			data[pageName] = {}
+			
+			-- Parcourir toutes les sections de la page
+			for _, section in ipairs(page.sections) do
+				local sectionName = section.container.Title.Text
+				data[pageName][sectionName] = {
+					toggles = {},
+					sliders = {},
+					keybinds = {},
+					colorpickers = {},
+					textboxes = {},
+					dropdowns = {}
+				}
+				
+				-- Parcourir tous les modules de la section
+				for _, module in ipairs(section.modules) do
+					local moduleName = module.Name
+					
+					-- Toggles
+					if moduleName == "Toggle" then
+						local title = module.Title.Text
+						local isActive = module.Button.Frame.Position.X.Scale > 0.4
+						data[pageName][sectionName].toggles[title] = isActive
+					
+					-- Sliders
+					elseif moduleName == "Slider" then
+						local title = module.Title.Text
+						local value = tonumber(module.TextBox.Text)
+						data[pageName][sectionName].sliders[title] = value
+					
+					-- Keybinds
+					elseif moduleName == "Keybind" then
+						local title = module.Title.Text
+						local keyName = module.Button.Text.Text
+						data[pageName][sectionName].keybinds[title] = keyName
+					
+					-- Color Pickers
+					elseif moduleName == "Colorpicker" then
+						local title = module.Title.Text
+						local color = module.Button.ImageColor3
+						data[pageName][sectionName].colorpickers[title] = {
+							R = color.R * 255,
+							G = color.G * 255,
+							B = color.B * 255
+						}
+					
+					-- Textboxes
+					elseif moduleName == "Textbox" then
+						local title = module.Title.Text
+						local text = module.Button.Textbox.Text
+						data[pageName][sectionName].textboxes[title] = text
+					
+					-- Dropdowns
+					elseif module:IsA("Frame") and module:FindFirstChild("Search") then
+						local title = module.Search.TextBox.Text
+						data[pageName][sectionName].dropdowns[title] = title
+					end
+				end
+			end
+		end
+		
+		return data
+	end
+	
+	-- Fonction pour appliquer automatiquement toutes les valeurs des contrôles
+	configSystem.autoApplyValues = function(s, data)
+		if not s.library or not s.library.pages then
+			return
+		end
+		
+		-- Parcourir toutes les pages
+		for _, page in ipairs(s.library.pages) do
+			local pageName = page.button.Name
+			
+			if data[pageName] then
+				-- Parcourir toutes les sections de la page
+				for _, section in ipairs(page.sections) do
+					local sectionName = section.container.Title.Text
+					
+					if data[pageName][sectionName] then
+						local sectionData = data[pageName][sectionName]
+						
+						-- Appliquer les toggles
+						if sectionData.toggles then
+							for title, value in pairs(sectionData.toggles) do
+								for _, module in ipairs(section.modules) do
+									if module.Name == "Toggle" and module.Title.Text == title then
+										spawn(function()
+											section:updateToggle(module, nil, value)
+										end)
+										break
+									end
+								end
+							end
+						end
+						
+						-- Appliquer les sliders
+						if sectionData.sliders then
+							for title, value in pairs(sectionData.sliders) do
+								for _, module in ipairs(section.modules) do
+									if module.Name == "Slider" and module.Title.Text == title then
+										spawn(function()
+											-- Récupérer min/max depuis le module
+											local min = 0
+											local max = 100
+											-- On peut pas facilement récupérer min/max, donc on applique directement
+											module.TextBox.Text = tostring(value)
+											local percent = value / 100 -- Approximation
+											utility:Tween(module.Slider.Bar.Fill, {Size = UDim2.new(math.clamp(percent, 0, 1), 0, 1, 0)}, 0.1)
+										end)
+										break
+									end
+								end
+							end
+						end
+						
+						-- Appliquer les keybinds
+						if sectionData.keybinds then
+							for title, keyName in pairs(sectionData.keybinds) do
+								for _, module in ipairs(section.modules) do
+									if module.Name == "Keybind" and module.Title.Text == title then
+										spawn(function()
+											if keyName ~= "None" and keyName ~= "..." then
+												local keyCode = Enum.KeyCode[keyName]
+												if keyCode then
+													section:updateKeybind(module, nil, keyCode)
+												end
+											end
+										end)
+										break
+									end
+								end
+							end
+						end
+						
+						-- Appliquer les color pickers
+						if sectionData.colorpickers then
+							for title, colorData in pairs(sectionData.colorpickers) do
+								for _, module in ipairs(section.modules) do
+									if module.Name == "Colorpicker" and module.Title.Text == title then
+										spawn(function()
+											local color = Color3.fromRGB(colorData.R, colorData.G, colorData.B)
+											section:updateColorPicker(module, nil, color)
+										end)
+										break
+									end
+								end
+							end
+						end
+						
+						-- Appliquer les textboxes
+						if sectionData.textboxes then
+							for title, text in pairs(sectionData.textboxes) do
+								for _, module in ipairs(section.modules) do
+									if module.Name == "Textbox" and module.Title.Text == title then
+										spawn(function()
+											section:updateTextbox(module, nil, text)
+										end)
+										break
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	
 	-- Sauvegarder la config
-	self.save = function(s, configName)
+	configSystem.save = function(s, configName)
 		if configName == "" or configName == nil then
 			return false, "Config name cannot be empty"
 		end
 		
 		local data = {}
 		
-		-- Collecter les données via les callbacks
+		-- Collecter les données via les callbacks (ancien système)
 		for category, callback in pairs(s.callbacks) do
 			data[category] = callback("get")
 		end
+		
+		-- Collecter automatiquement toutes les valeurs des contrôles (nouveau système)
+		data["_autoControls"] = s:autoCollectValues()
 		
 		local success, result = pcall(function()
 			local json = game:GetService("HttpService"):JSONEncode(data)
@@ -2436,7 +2620,7 @@ function library:createConfigSystem()
 	end
 	
 	-- Charger la config
-	self.load = function(s, configName)
+	configSystem.load = function(s, configName)
 		if configName == "" or configName == nil then
 			return false, "Config name cannot be empty"
 		end
@@ -2451,11 +2635,16 @@ function library:createConfigSystem()
 			local json = readfile(filePath)
 			local data = game:GetService("HttpService"):JSONDecode(json)
 			
-			-- Appliquer les données via les callbacks
+			-- Appliquer les données via les callbacks (ancien système)
 			for category, values in pairs(data) do
-				if s.callbacks[category] then
+				if category ~= "_autoControls" and s.callbacks[category] then
 					s.callbacks[category]("set", values)
 				end
+			end
+			
+			-- Appliquer automatiquement toutes les valeurs des contrôles (nouveau système)
+			if data["_autoControls"] then
+				s:autoApplyValues(data["_autoControls"])
 			end
 		end)
 		
@@ -2467,7 +2656,7 @@ function library:createConfigSystem()
 	end
 	
 	-- Supprimer une config
-	self.delete = function(s, configName)
+	configSystem.delete = function(s, configName)
 		if configName == "" or configName == nil then
 			return false, "Config name cannot be empty"
 		end
@@ -2490,7 +2679,7 @@ function library:createConfigSystem()
 	end
 	
 	-- Lister toutes les configs
-	self.list = function(s)
+	configSystem.list = function(s)
 		local configs = {}
 		
 		if not isfolder(s.configFolder) then
@@ -2499,7 +2688,7 @@ function library:createConfigSystem()
 		
 		local success, result = pcall(function()
 			for _, file in pairs(listfiles(s.configFolder)) do
-				-- Support both / and \ for cross-platform compatibility
+				-- Extraire le nom de fichier (compatible Windows et Unix)
 				local fileName = file:match("^.+[/\\](.+)$") or file
 				if fileName:match("%.json$") then
 					local configName = fileName:gsub("%.json$", "")
@@ -2512,7 +2701,7 @@ function library:createConfigSystem()
 	end
 	
 	-- Auto-save périodique (optionnel)
-	self.enableAutoSave = function(s, configName, interval)
+	configSystem.enableAutoSave = function(s, configName, interval)
 		interval = interval or 300 -- 5 minutes par défaut
 		
 		spawn(function()
@@ -2523,7 +2712,7 @@ function library:createConfigSystem()
 		end)
 	end
 	
-	return self
+	return configSystem
 end
 
 return library
