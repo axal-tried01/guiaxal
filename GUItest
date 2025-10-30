@@ -2816,8 +2816,8 @@ function library:createESPPreview()
 	local characterFrame = utility:Create("Frame", {
 		Name = "CharacterFrame",
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0.5, -30, 0.5, -60),
-		Size = UDim2.new(0, 60, 0, 120),
+		Position = UDim2.new(0.5, -35, 0.5, -75),
+		Size = UDim2.new(0, 70, 0, 150),
 		Parent = canvas
 	})
 	
@@ -2828,7 +2828,7 @@ function library:createESPPreview()
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Position = UDim2.new(0.35, 0, 0, 0),
-		Size = UDim2.new(0.3, 0, 0.15, 0),
+		Size = UDim2.new(0.3, 0, 0.13, 0),
 		Parent = characterFrame
 	})
 	
@@ -2838,7 +2838,7 @@ function library:createESPPreview()
 		BackgroundColor3 = Color3.fromRGB(100, 150, 255),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
-		Position = UDim2.new(0.25, 0, 0.2, 0),
+		Position = UDim2.new(0.25, 0, 0.16, 0),
 		Size = UDim2.new(0.5, 0, 0.3, 0),
 		Parent = characterFrame
 	})
@@ -2849,7 +2849,7 @@ function library:createESPPreview()
 		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
-		Position = UDim2.new(0, 0, 0.2, 0),
+		Position = UDim2.new(0, 0, 0.16, 0),
 		Size = UDim2.new(0.25, 0, 0.3, 0),
 		Parent = characterFrame
 	})
@@ -2860,7 +2860,7 @@ function library:createESPPreview()
 		BackgroundColor3 = Color3.fromRGB(255, 200, 180),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
-		Position = UDim2.new(0.75, 0, 0.2, 0),
+		Position = UDim2.new(0.75, 0, 0.16, 0),
 		Size = UDim2.new(0.25, 0, 0.3, 0),
 		Parent = characterFrame
 	})
@@ -2871,8 +2871,8 @@ function library:createESPPreview()
 		BackgroundColor3 = Color3.fromRGB(50, 100, 200),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
-		Position = UDim2.new(0.25, 0, 0.5, 0),
-		Size = UDim2.new(0.25, 0, 0.5, 0),
+		Position = UDim2.new(0.25, 0, 0.46, 0),
+		Size = UDim2.new(0.25, 0, 0.44, 0),
 		Parent = characterFrame
 	})
 	
@@ -2882,8 +2882,8 @@ function library:createESPPreview()
 		BackgroundColor3 = Color3.fromRGB(50, 100, 200),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(0.25, 0, 0.5, 0),
+		Position = UDim2.new(0.5, 0, 0.46, 0),
+		Size = UDim2.new(0.25, 0, 0.44, 0),
 		Parent = characterFrame
 	})
 	
@@ -3030,11 +3030,17 @@ function library:createESPPreview()
 		local canvasPos = canvas.AbsolutePosition
 		local canvasSize = canvas.AbsoluteSize
 		
+		-- Get character frame position and size for centering
+		local charPos = characterFrame.AbsolutePosition
+		local charSize = characterFrame.AbsoluteSize
+		local charCenterX = charPos.X + charSize.X / 2
+		local charCenterY = charPos.Y + charSize.Y / 2
+		
 		-- Calculate ESP box dimensions (centered around the character)
 		local boxWidth = 80
-		local boxHeight = 130
-		local boxX = canvasPos.X + (canvasSize.X - boxWidth) / 2
-		local boxY = canvasPos.Y + (canvasSize.Y - boxHeight) / 2
+		local boxHeight = 160
+		local boxX = charCenterX - boxWidth / 2
+		local boxY = charCenterY - boxHeight / 2
 		
 		-- Update box
 		if _G.espBoxEnabled then
