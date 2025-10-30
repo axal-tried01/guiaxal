@@ -2720,20 +2720,23 @@ local ESPPreview = {}
 ESPPreview.__index = ESPPreview
 
 function library:createESPPreview()
-	local self = setmetatable({}, ESPPreview)
-	self.themes = themes
-	self.enabled = true
-	self.visible = true
+	local espPreview = setmetatable({}, ESPPreview)
+	espPreview.themes = themes
+	espPreview.enabled = true
+	espPreview.visible = true
+	espPreview.mainGUI = self -- self ici est le library
+	espPreview.followGUI = true -- Suivre automatiquement le GUI
+	espPreview.offsetX = 10 -- Offset à droite du GUI principal
 	
 	-- Créer le container
-	self.container = utility:Create("ScreenGui", {
+	espPreview.container = utility:Create("ScreenGui", {
 		Name = "ESPPreview",
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 		Parent = game.CoreGui
 	})
 	
 	-- Frame principale
-	self.frame = utility:Create("ImageLabel", {
+	espPreview.frame = utility:Create("ImageLabel", {
 		Name = "ESPPreviewFrame",
 		BackgroundTransparency = 1,
 		Position = UDim2.new(1, -260, 0, 120),
@@ -2742,7 +2745,7 @@ function library:createESPPreview()
 		ImageColor3 = themes.Background,
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(4, 4, 296, 296),
-		Parent = self.container
+		Parent = espPreview.container
 	})
 	
 	-- Glow effect
@@ -2756,7 +2759,7 @@ function library:createESPPreview()
 		ImageColor3 = themes.Glow,
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(100, 100, 100, 100),
-		Parent = self.frame
+		Parent = espPreview.frame
 	})
 	
 	-- Title
@@ -2770,7 +2773,7 @@ function library:createESPPreview()
 		TextColor3 = themes.TextColor,
 		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = self.frame
+		Parent = espPreview.frame
 	})
 	
 	-- Toggle visibility button
@@ -2783,7 +2786,7 @@ function library:createESPPreview()
 		Text = "○",
 		TextColor3 = themes.TextColor,
 		TextSize = 16,
-		Parent = self.frame
+		Parent = espPreview.frame
 	})
 	
 	-- Preview container
@@ -2796,7 +2799,7 @@ function library:createESPPreview()
 		ImageColor3 = themes.DarkContrast,
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(4, 4, 296, 296),
-		Parent = self.frame
+		Parent = espPreview.frame
 	})
 	
 	-- Preview canvas (where the ESP elements will be drawn)
@@ -2810,81 +2813,132 @@ function library:createESPPreview()
 	})
 	
 	-- Create Drawing API elements for ESP preview
-	self.drawings = {}
+	espPreview.drawings = {}
 	
 	-- Box
-	self.drawings.boxOutline = Drawing.new("Square")
-	self.drawings.boxOutline.Thickness = 3
-	self.drawings.boxOutline.Filled = false
-	self.drawings.boxOutline.Color = Color3.fromRGB(0, 0, 0)
-	self.drawings.boxOutline.Visible = false
-	self.drawings.boxOutline.ZIndex = 1
+	espPreview.drawings.boxOutline = Drawing.new("Square")
+	espPreview.drawings.boxOutline.Thickness = 3
+	espPreview.drawings.boxOutline.Filled = false
+	espPreview.drawings.boxOutline.Color = Color3.fromRGB(0, 0, 0)
+	espPreview.drawings.boxOutline.Visible = false
+	espPreview.drawings.boxOutline.ZIndex = 1
 	
-	self.drawings.box = Drawing.new("Square")
-	self.drawings.box.Thickness = 1
-	self.drawings.box.Filled = false
-	self.drawings.box.Color = Color3.fromRGB(255, 255, 255)
-	self.drawings.box.Visible = false
-	self.drawings.box.ZIndex = 2
+	espPreview.drawings.box = Drawing.new("Square")
+	espPreview.drawings.box.Thickness = 1
+	espPreview.drawings.box.Filled = false
+	espPreview.drawings.box.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.box.Visible = false
+	espPreview.drawings.box.ZIndex = 2
+	
+	-- Corner Lines for Corners mode
+	espPreview.drawings.cornerLines = {}
+	
+	espPreview.drawings.cornerLines.topLeftH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topLeftH.Thickness = 2
+	espPreview.drawings.cornerLines.topLeftH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topLeftH.Visible = false
+	espPreview.drawings.cornerLines.topLeftH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.topLeftV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topLeftV.Thickness = 2
+	espPreview.drawings.cornerLines.topLeftV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topLeftV.Visible = false
+	espPreview.drawings.cornerLines.topLeftV.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.topRightH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topRightH.Thickness = 2
+	espPreview.drawings.cornerLines.topRightH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topRightH.Visible = false
+	espPreview.drawings.cornerLines.topRightH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.topRightV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.topRightV.Thickness = 2
+	espPreview.drawings.cornerLines.topRightV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.topRightV.Visible = false
+	espPreview.drawings.cornerLines.topRightV.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomLeftH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomLeftH.Thickness = 2
+	espPreview.drawings.cornerLines.bottomLeftH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomLeftH.Visible = false
+	espPreview.drawings.cornerLines.bottomLeftH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomLeftV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomLeftV.Thickness = 2
+	espPreview.drawings.cornerLines.bottomLeftV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomLeftV.Visible = false
+	espPreview.drawings.cornerLines.bottomLeftV.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomRightH = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomRightH.Thickness = 2
+	espPreview.drawings.cornerLines.bottomRightH.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomRightH.Visible = false
+	espPreview.drawings.cornerLines.bottomRightH.ZIndex = 2
+	
+	espPreview.drawings.cornerLines.bottomRightV = Drawing.new("Line")
+	espPreview.drawings.cornerLines.bottomRightV.Thickness = 2
+	espPreview.drawings.cornerLines.bottomRightV.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.cornerLines.bottomRightV.Visible = false
+	espPreview.drawings.cornerLines.bottomRightV.ZIndex = 2
 	
 	-- Box Fill
-	self.drawings.boxFill = Drawing.new("Square")
-	self.drawings.boxFill.Filled = true
-	self.drawings.boxFill.Color = Color3.fromRGB(255, 255, 255)
-	self.drawings.boxFill.Transparency = 0.1
-	self.drawings.boxFill.Visible = false
-	self.drawings.boxFill.ZIndex = 0
+	espPreview.drawings.boxFill = Drawing.new("Square")
+	espPreview.drawings.boxFill.Filled = true
+	espPreview.drawings.boxFill.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.boxFill.Transparency = 0.1
+	espPreview.drawings.boxFill.Visible = false
+	espPreview.drawings.boxFill.ZIndex = 0
 	
 	-- Health Bar
-	self.drawings.healthOutline = Drawing.new("Square")
-	self.drawings.healthOutline.Thickness = 1
-	self.drawings.healthOutline.Filled = true
-	self.drawings.healthOutline.Color = Color3.fromRGB(0, 0, 0)
-	self.drawings.healthOutline.Visible = false
-	self.drawings.healthOutline.ZIndex = 1
+	espPreview.drawings.healthOutline = Drawing.new("Square")
+	espPreview.drawings.healthOutline.Thickness = 1
+	espPreview.drawings.healthOutline.Filled = true
+	espPreview.drawings.healthOutline.Color = Color3.fromRGB(0, 0, 0)
+	espPreview.drawings.healthOutline.Visible = false
+	espPreview.drawings.healthOutline.ZIndex = 1
 	
-	self.drawings.health = Drawing.new("Square")
-	self.drawings.health.Filled = true
-	self.drawings.health.Color = Color3.fromRGB(0, 255, 0)
-	self.drawings.health.Visible = false
-	self.drawings.health.ZIndex = 2
+	espPreview.drawings.health = Drawing.new("Square")
+	espPreview.drawings.health.Filled = true
+	espPreview.drawings.health.Color = Color3.fromRGB(0, 255, 0)
+	espPreview.drawings.health.Visible = false
+	espPreview.drawings.health.ZIndex = 2
 	
 	-- Text labels
-	self.drawings.nameText = Drawing.new("Text")
-	self.drawings.nameText.Text = "Username"
-	self.drawings.nameText.Size = 13
-	self.drawings.nameText.Font = 2
-	self.drawings.nameText.Color = Color3.fromRGB(255, 255, 255)
-	self.drawings.nameText.Center = true
-	self.drawings.nameText.Outline = true
-	self.drawings.nameText.OutlineColor = Color3.fromRGB(0, 0, 0)
-	self.drawings.nameText.Visible = false
-	self.drawings.nameText.ZIndex = 3
+	espPreview.drawings.nameText = Drawing.new("Text")
+	espPreview.drawings.nameText.Text = "Username"
+	espPreview.drawings.nameText.Size = 13
+	espPreview.drawings.nameText.Font = 2
+	espPreview.drawings.nameText.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.nameText.Center = true
+	espPreview.drawings.nameText.Outline = true
+	espPreview.drawings.nameText.OutlineColor = Color3.fromRGB(0, 0, 0)
+	espPreview.drawings.nameText.Visible = false
+	espPreview.drawings.nameText.ZIndex = 3
 	
-	self.drawings.distanceText = Drawing.new("Text")
-	self.drawings.distanceText.Text = "25m"
-	self.drawings.distanceText.Size = 13
-	self.drawings.distanceText.Font = 2
-	self.drawings.distanceText.Color = Color3.fromRGB(255, 255, 255)
-	self.drawings.distanceText.Center = true
-	self.drawings.distanceText.Outline = true
-	self.drawings.distanceText.OutlineColor = Color3.fromRGB(0, 0, 0)
-	self.drawings.distanceText.Visible = false
-	self.drawings.distanceText.ZIndex = 3
+	espPreview.drawings.distanceText = Drawing.new("Text")
+	espPreview.drawings.distanceText.Text = "25m"
+	espPreview.drawings.distanceText.Size = 13
+	espPreview.drawings.distanceText.Font = 2
+	espPreview.drawings.distanceText.Color = Color3.fromRGB(255, 255, 255)
+	espPreview.drawings.distanceText.Center = true
+	espPreview.drawings.distanceText.Outline = true
+	espPreview.drawings.distanceText.OutlineColor = Color3.fromRGB(0, 0, 0)
+	espPreview.drawings.distanceText.Visible = false
+	espPreview.drawings.distanceText.ZIndex = 3
 	
 	-- Skeleton lines
-	self.drawings.skeleton = {}
+	espPreview.drawings.skeleton = {}
 	for i = 1, 12 do
 		local line = Drawing.new("Line")
 		line.Thickness = 2
 		line.Color = Color3.fromRGB(255, 255, 255)
 		line.Visible = false
 		line.ZIndex = 2
-		table.insert(self.drawings.skeleton, line)
+		table.insert(espPreview.drawings.skeleton, line)
 	end
 	
 	-- Update function to calculate positions
-	function self:update()
+	function espPreview:update()
 		if not self.visible then
 			for _, drawing in pairs(self.drawings) do
 				if type(drawing) == "table" then
@@ -2909,16 +2963,71 @@ function library:createESPPreview()
 		
 		-- Update box
 		if _G.espBoxEnabled then
-			self.drawings.boxOutline.Size = Vector2.new(boxWidth, boxHeight)
-			self.drawings.boxOutline.Position = Vector2.new(boxX - 1, boxY - 1)
-			self.drawings.boxOutline.Visible = true
-			
-			self.drawings.box.Size = Vector2.new(boxWidth, boxHeight)
-			self.drawings.box.Position = Vector2.new(boxX, boxY)
-			self.drawings.box.Visible = true
+			if _G.espBoxMode == "full" then
+				-- Mode Full Box
+				self.drawings.boxOutline.Size = Vector2.new(boxWidth, boxHeight)
+				self.drawings.boxOutline.Position = Vector2.new(boxX - 1, boxY - 1)
+				self.drawings.boxOutline.Visible = true
+				
+				self.drawings.box.Size = Vector2.new(boxWidth, boxHeight)
+				self.drawings.box.Position = Vector2.new(boxX, boxY)
+				self.drawings.box.Visible = true
+				
+				-- Hide corner lines
+				for _, line in pairs(self.drawings.cornerLines) do
+					line.Visible = false
+				end
+			elseif _G.espBoxMode == "corners" then
+				-- Mode Corners
+				self.drawings.boxOutline.Visible = false
+				self.drawings.box.Visible = false
+				
+				-- Show corner lines
+				local cornerLength = math.min(boxWidth, boxHeight) / 4
+				
+				-- Top Left
+				self.drawings.cornerLines.topLeftH.From = Vector2.new(boxX, boxY)
+				self.drawings.cornerLines.topLeftH.To = Vector2.new(boxX + cornerLength, boxY)
+				self.drawings.cornerLines.topLeftH.Visible = true
+				
+				self.drawings.cornerLines.topLeftV.From = Vector2.new(boxX, boxY)
+				self.drawings.cornerLines.topLeftV.To = Vector2.new(boxX, boxY + cornerLength)
+				self.drawings.cornerLines.topLeftV.Visible = true
+				
+				-- Top Right
+				self.drawings.cornerLines.topRightH.From = Vector2.new(boxX + boxWidth - cornerLength, boxY)
+				self.drawings.cornerLines.topRightH.To = Vector2.new(boxX + boxWidth, boxY)
+				self.drawings.cornerLines.topRightH.Visible = true
+				
+				self.drawings.cornerLines.topRightV.From = Vector2.new(boxX + boxWidth, boxY)
+				self.drawings.cornerLines.topRightV.To = Vector2.new(boxX + boxWidth, boxY + cornerLength)
+				self.drawings.cornerLines.topRightV.Visible = true
+				
+				-- Bottom Left
+				self.drawings.cornerLines.bottomLeftH.From = Vector2.new(boxX, boxY + boxHeight)
+				self.drawings.cornerLines.bottomLeftH.To = Vector2.new(boxX + cornerLength, boxY + boxHeight)
+				self.drawings.cornerLines.bottomLeftH.Visible = true
+				
+				self.drawings.cornerLines.bottomLeftV.From = Vector2.new(boxX, boxY + boxHeight - cornerLength)
+				self.drawings.cornerLines.bottomLeftV.To = Vector2.new(boxX, boxY + boxHeight)
+				self.drawings.cornerLines.bottomLeftV.Visible = true
+				
+				-- Bottom Right
+				self.drawings.cornerLines.bottomRightH.From = Vector2.new(boxX + boxWidth - cornerLength, boxY + boxHeight)
+				self.drawings.cornerLines.bottomRightH.To = Vector2.new(boxX + boxWidth, boxY + boxHeight)
+				self.drawings.cornerLines.bottomRightH.Visible = true
+				
+				self.drawings.cornerLines.bottomRightV.From = Vector2.new(boxX + boxWidth, boxY + boxHeight - cornerLength)
+				self.drawings.cornerLines.bottomRightV.To = Vector2.new(boxX + boxWidth, boxY + boxHeight)
+				self.drawings.cornerLines.bottomRightV.Visible = true
+			end
 		else
 			self.drawings.boxOutline.Visible = false
 			self.drawings.box.Visible = false
+			-- Hide corner lines
+			for _, line in pairs(self.drawings.cornerLines) do
+				line.Visible = false
+			end
 		end
 		
 		-- Update box fill
@@ -3034,28 +3143,47 @@ function library:createESPPreview()
 	
 	-- Toggle button functionality
 	toggleButton.MouseButton1Click:Connect(function()
-		self.visible = not self.visible
-		toggleButton.Text = self.visible and "○" or "●"
-		self:update()
+		espPreview.visible = not espPreview.visible
+		toggleButton.Text = espPreview.visible and "○" or "●"
+		espPreview:update()
 	end)
+	
+	-- Fonction pour suivre le GUI principal
+	function espPreview:updatePosition()
+		if self.followGUI and self.mainGUI and self.mainGUI.container and self.mainGUI.container.Main then
+			local mainFrame = self.mainGUI.container.Main
+			local mainPos = mainFrame.Position
+			local mainSize = mainFrame.AbsoluteSize
+			
+			-- Positionner l'ESP Preview à droite du GUI principal
+			self.frame.Position = UDim2.new(
+				mainPos.X.Scale,
+				mainPos.X.Offset + mainSize.X + self.offsetX,
+				mainPos.Y.Scale,
+				mainPos.Y.Offset
+			)
+		end
+	end
 	
 	-- Auto-update loop
 	run.RenderStepped:Connect(function()
-		if self.enabled then
-			self:update()
+		if espPreview.enabled then
+			espPreview:updatePosition() -- Suivre le GUI principal
+			espPreview:update()
 		end
 	end)
 	
-	function self:setPosition(position)
+	function espPreview:setPosition(position)
 		self.frame.Position = position
+		self.followGUI = false -- Désactiver le suivi automatique quand on set manuellement
 	end
 	
-	function self:show()
+	function espPreview:show()
 		self.enabled = true
 		self.container.Enabled = true
 	end
 	
-	function self:hide()
+	function espPreview:hide()
 		self.enabled = false
 		self.container.Enabled = false
 		-- Hide all drawings
@@ -3070,7 +3198,7 @@ function library:createESPPreview()
 		end
 	end
 	
-	function self:remove()
+	function espPreview:remove()
 		self:hide()
 		self.container:Destroy()
 		for _, drawing in pairs(self.drawings) do
@@ -3084,7 +3212,7 @@ function library:createESPPreview()
 		end
 	end
 	
-	function self:setTheme(theme, color)
+	function espPreview:setTheme(theme, color)
 		self.themes[theme] = color
 		if theme == "Background" then
 			self.frame.ImageColor3 = color
@@ -3098,7 +3226,7 @@ function library:createESPPreview()
 		end
 	end
 	
-	return self
+	return espPreview
 end
 
 return library
