@@ -3034,12 +3034,13 @@ function library:createESPPreview()
 		local charPos = characterFrame.AbsolutePosition
 		local charSize = characterFrame.AbsoluteSize
 		local charCenterX = charPos.X + charSize.X / 2
+		local charBottom = charPos.Y + charSize.Y  -- Bottom of feet
 		
 		-- Calculate ESP box dimensions (from feet to head)
 		local boxWidth = 80
 		local boxHeight = charSize.Y + 10  -- Slightly taller than character
 		local boxX = charCenterX - boxWidth / 2
-		local boxY = charPos.Y - 5  -- Start slightly above head
+		local boxY = charBottom - boxHeight  -- End exactly at bottom of feet
 		
 		-- Update box
 		if _G.espBoxEnabled then
